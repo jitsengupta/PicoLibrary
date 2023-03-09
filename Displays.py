@@ -1,8 +1,10 @@
-# A collection of various text-based displays
+"""
+A collection of various text-based displays
 # Currently supports 4-digit seven-segment displays - both with a tm1637 backpack
 # and without (using PIO)
 # And also LCD 1602 displays - both using an i2c backpack as well as GPIO
 # Only supports number and basic text displays - PIO 7 seg only supports number
+"""
 
 from machine import Pin, I2C, SPI
 import rp2
@@ -14,11 +16,11 @@ from pico_i2c_lcd import I2cLcd
 from ssd1306 import SSD1306_I2C
 import max7219
 
-"""
-The Display Base class - might not actually be needed
-But here to ensure we do not have a duckTyping problem
-"""
 class Display:
+    """
+    The Display Base class - might not actually be needed
+    But here to ensure we do not have a duckTyping problem
+    """
 
     def reset(self):
         print(f"reset NOT IMPLEMENTED in {type(self).__name__}")
@@ -33,53 +35,53 @@ class Display:
         print(f"Scroll NOT IMPLEMENTED! in {type(self).__name__}")
 
 
-"""
-Seven Segment Display class - implements a 4-digit seven segment display
-Decimal points not supported - colon can be used when showing two numbers
-"""
 class SevenSegmentDisplay(Display):
+    """
+    Seven Segment Display class - implements a 4-digit seven segment display
+    Decimal points not supported - colon can be used when showing two numbers
+    """
+
     def __init__(self, clk=16, dio=17):
         self._tm = tm1637.TM1637(clk=Pin(clk), dio=Pin(dio))
 
-    """ 
-    clear the display screen
-    """
     def reset(self):
+        """ clear the display screen  """
+        
         self._tm.write([0, 0, 0, 0])
 
-    """
-    show a single number
-    """
     def showNumber(self, number):
+        """ show a single number """
+        
         self._tm.number(number)
 
-    """
-    Show two numbers optionally separated by a colon
-    by default, the colon is shown
-    """
     def showNumbers(self, num1, num2, colon=True):
+        """  Show two numbers optionally separated by a colon by default, the colon is shown """
+        
         self._tm.numbers(num1, num2, colon)
 
-    """
-    Show a string - only first 4 characters will be shown
-    for anything bigger than 4 characters.
-    """
     def showText(self, text):
+        """
+        Show a string - only first 4 characters will be shown
+        for anything bigger than 4 characters.
+        """
+        
         self._tm.show(text)
 
-    """
-    Scroll a longer text - note that this will use a sleep
-    call to pause between movements.
-    """
     def scroll(self, text, speed=250):
+        """
+        Scroll a longer text - note that this will use a sleep
+        call to pause between movements.
+        """
+        
         self._tm.scroll(text, speed)
 
-"""
-A Raw 7 segment display that uses RPi PIO along with internal StateMachine
-to poll 4 digits into the display. All digits are shown always so there will be
-leading zeros for numbers under 4 digits
-"""
 class SevenSegmentDisplayRaw(Display):
+    """
+    A Raw 7 segment display that uses RPi PIO along with internal StateMachine
+    to poll 4 digits into the display. All digits are shown always so there will be
+    leading zeros for numbers under 4 digits
+    """
+    
     def __init__(self, pinstart=2, digstart=10):
         self._digits = [
             0b11000000, # 0
@@ -109,15 +111,17 @@ class SevenSegmentDisplayRaw(Display):
     def reset(self):
         self._sm.put(self._segmentize(0))
 
-"""
-LCD Display class - currently supports displays with an I2C backpack
-as well as displays directly driven via the d4-d7 pins
-"""
 class LCDDisplay(Display):
     """
-    constructor for the direct-driven displays
+    LCD Display class - currently supports displays with an I2C backpack
+    as well as displays directly driven via the d4-d7 pins
     """
+    
     def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0):
+        """
+        constructor for the direct-driven displays
+        """
+        
         print("LCDDisplay Constructor")
         self._lcd = GpioLcd(rs_pin=Pin(rs),
               enable_pin=Pin(e),
@@ -127,61 +131,59 @@ class LCDDisplay(Display):
               d7_pin=Pin(d7),
               num_lines=2, num_columns=16)
 
-    """
-    Constructor for the I2C displays
-    """
     def __init__(self, sda=0, scl=1):
+        """
+        Constructor for the I2C displays
+        """
+        
         print("LCDDisplay (I2C) Constructor")
         i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
         I2C_ADDR = i2c.scan()[0]
         self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
 
-    """ 
-    clear the display screen
-    """
     def reset(self):
+        """ 
+        clear the display screen
+        """
+        
         print("LCDDisplay: reset")
         self._lcd.clear()
 
-    """
-    show a single number
-    """
     def showNumber(self, number, row=0, col=0):
+        """
+        show a single number
+        """
+        
         print(f"LCDDisplay - showing number {number} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(f"{number}")
 
-    """
-    Show two numbers optionally separated by a colon
-    by default, the colon is shown
-    """
     def showNumbers(self, num1, num2, colon=True, row=0, col=0):
+        """
+        Show two numbers optionally separated by a colon
+        by default, the colon is shown
+        """
+        
         print(f"LCDDisplay - showing numbers {num1}, {num2} at {row},{col}")
         self._lcd.move_to(col, row)
         colsym = ":" if colon else " "
         self._lcd.putstr(f"{num1}{colsym}{num2}")
 
-    """
-    Show a string - only first 4 characters will be shown
-    for anything bigger than 4 characters.
-    """
     def showText(self, text, row=0, col=0):
+        """
+        Show a string - only first 4 characters will be shown
+        for anything bigger than 4 characters.
+        """
+        
         print(f"LCDDisplay - showing text {text} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(text)
 
-    """
-    Scroll a longer text - note that this will use a sleep
-    call to pause between movements.
-    """
-    def scroll(self, text, speed=250):
-        print("LCDDisplay: Scroll - Not yet implemented")
-
-"""
-An implementation of the MAX7219 Dot Matrix display
-Fairly simplistic implementation - tested only with simulator so far 
-"""
 class DotMatrixDisplay(Display):
+    """
+    An implementation of the MAX7219 Dot Matrix display
+    Fairly simplistic implementation - tested only with simulator so far 
+    """
 
     def __init__(self, sck=18, mosi=19, cs=17):
         self._spi = SPI(0, baudrate=10000000, polarity=1, phase=0, sck=Pin(sck), mosi=Pin(mosi))
@@ -218,10 +220,10 @@ class DotMatrixDisplay(Display):
             #Set the Scrolling speed. Here it is 50mS.
             time.sleep(speed/1000)
 
-"""
-OLEDDisplay class - implements an OLED display
-"""
 class OLEDDisplay(Display):
+    """
+    OLEDDisplay class - implements an OLED display
+    """
 
     def __init__(self, sda=26, scl=27, width=128, height=64):
         self._i2c = I2C(1, sda=Pin(sda), scl=Pin(scl), freq=400000)
