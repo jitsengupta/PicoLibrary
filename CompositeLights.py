@@ -1,8 +1,10 @@
 # A simple inheritance structure showing a fairly abstract CompositeLight
 # class that has a set of lights, and two different implementations of it
 
-from time import sleep
-
+from time import sleep, sleep_ms
+import array, time
+from machine import Pin
+import rp2
 
 class CompositeLight:
     """
@@ -123,7 +125,7 @@ class Pixel(CompositeLight):
     The Pixel class - just uses an RGB LED to provide a simple implementation
     of a pixel that can be technically set to any color.
     """        
-    
+
     def __init__(self, R, G, B, commoncathode = True):
         """     # Pixel constructor """
 
@@ -166,3 +168,140 @@ class Pixel(CompositeLight):
         for l in self._lights:
             l.upDown()        
          
+class NeoPixel(CompositeLight):
+    """
+    Although technically a composite light, a neopixel is a PIO-driven set of lights
+    using a single output pin. So you do not send it composite lights, but just the pin
+    it is connected to. It is a composite light because it has multiple lights, but
+    they cannot technically be controlled individually.
+    """
+
+    FILLS = 0
+    CHASES = 1
+    RAINBOW = 2
+
+    def __init__(self, pin=22, numleds=16, brightness=0.5):
+        """
+        Constructor for neopixel will create its own internal statemachine
+        Note that if any other state machine is running, this will break the existing
+        statemachine. This refers to the Pico PIO statemachine, not any software state
+        machines.
+        """
+
+        self._pin = pin
+        self._numleds = numleds
+        self._brightness = brightness
+        # Create the StateMachine with the ws2812 program, outputting on pin
+        self._sm = rp2.StateMachine(0, ws2812, freq=8_000_000, sideset_base=Pin(self._pin))
+
+        # Start the StateMachine, it will wait for data on its FIFO.
+        self._sm.active(1)
+
+        # Display a pattern on the LEDs via an array of LED RGB values.
+        self._ar = array.array("I", [0 for _ in range(self._numleds)])
+
+    def on(self):
+        """ Turn all LEDs ON - all white """
+
+        self.pixels_fill(WHITE)
+        self.pixels_show()
+    
+    def off(self):
+        """ Turn all LEDs OFF - all black """
+
+        self.pixels_fill(BLACK)
+        self.pixels_show()
+
+    def setBrightness(self, brightness=0.5):
+        self._brightness = brightness
+
+    def run(self, runtype=0):
+        if runtype == NeoPixel.FILLS:
+            print("fills")
+            for color in COLORS:       
+                self.pixels_fill(color)
+                self.pixels_show()
+                sleep(0.2)
+        elif runtype == NeoPixel.CHASES:
+            print("chases")
+            for color in COLORS:       
+                self.color_chase(color, 0.01)
+        else:
+            print("rainbow")
+            self.rainbow_cycle(0)
+
+
+    ################# Internal functions #################
+    def pixels_show(self):
+        dimmer_ar = array.array("I", [0 for _ in range(self._numleds)])
+        for i,c in enumerate(self._ar):
+            r = int(((c >> 8) & 0xFF) * self._brightness)
+            g = int(((c >> 16) & 0xFF) * self._brightness)
+            b = int((c & 0xFF) * self._brightness)
+            dimmer_ar[i] = (g<<16) + (r<<8) + b
+        self._sm.put(dimmer_ar, 8)
+        sleep_ms(10)
+
+    def pixels_set(self, i, color):
+        self._ar[i] = (color[1]<<16) + (color[0]<<8) + color[2]
+
+    def pixels_fill(self, color):
+        for i in range(len(self._ar)):
+            self.pixels_set(i, color)
+
+    def color_chase(self, color, wait):
+        for i in range(self._numleds):
+            self.pixels_set(i, color)
+            sleep(wait)
+            self.pixels_show()
+        sleep(0.2)
+    
+    def wheel(self, pos):
+        # Input a value 0 to 255 to get a color value.
+        # The colours are a transition r - g - b - back to r.
+        if pos < 0 or pos > 255:
+            return (0, 0, 0)
+        if pos < 85:
+            return (255 - pos * 3, pos * 3, 0)
+        if pos < 170:
+            pos -= 85
+            return (0, 255 - pos * 3, pos * 3)
+        pos -= 170
+        return (pos * 3, 0, 255 - pos * 3)
+    
+    
+    def rainbow_cycle(self, wait):
+        for j in range(255):
+            for i in range(self._numleds):
+                rc_index = (i * 256 // self._numleds) + j
+                self.pixels_set(i, self.wheel(rc_index & 255))
+            self.pixels_show()
+            sleep(wait)
+
+
+# Internal definitions for the Pico PIO ASM
+@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW, out_shiftdir=rp2.PIO.SHIFT_LEFT, autopull=True, pull_thresh=24)
+def ws2812():
+    T1 = 2
+    T2 = 5
+    T3 = 3
+    wrap_target()
+    label("bitloop")
+    out(x, 1)               .side(0)    [T3 - 1]
+    jmp(not_x, "do_zero")   .side(1)    [T1 - 1]
+    jmp("bitloop")          .side(1)    [T2 - 1]
+    label("do_zero")
+    nop()                   .side(0)    [T2 - 1]
+    wrap()
+
+# Some color definitions
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 150, 0)
+GREEN = (0, 255, 0)
+CYAN = (0, 255, 255)
+BLUE = (0, 0, 255)
+PURPLE = (180, 0, 255)
+WHITE = (255, 255, 255)
+ORANGE = (255, 164, 0)
+COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE, ORANGE)
