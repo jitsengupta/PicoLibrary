@@ -3,40 +3,50 @@
 
 from time import sleep
 
-"""
-The base CompositeLight class - contains just an array
-and the on, off, run methods that subclasses should potentially override
-The base class simply calls on and off on all internal lights
-that may not be the proper way to turn on the composite
-"""
+
 class CompositeLight:
+    """
+    The base CompositeLight class - contains just an array
+    and the on, off, run methods that subclasses should potentially override
+    The base class simply calls on and off on all internal lights
+    that may not be the proper way to turn on the composite
+    """
     
-    # Constructor - just initialize the array of lights
     def __init__(self):
+        """    # Constructor - just initialize the array of lights """
+
         print("CompositeLight constructor")
         self._lights = []
         self._running = False
         
-    # Technically this is an abstract method but Python does not
-    # correctly support it, so just an empty shell
     def run(self):
+        """
+        # Technically this is an abstract method but Python does not
+        # correctly support it, so just an empty shell
+        """
+        
         self._running = True
 
-    # Turn on all the componets. Note that in does not necessarily
-    # get all items in order - but usually does
     def on(self):
+        """
+        # Turn on all the componets. Note that in does not necessarily
+        # get all items in order - but usually does
+        """
+        
         print("CompositeLight: turning on all lights")
         for l in self._lights:
             l.on()
 
-    # Turn off all the components
     def off(self):
+        """     # Turn off all the components """
+
         print("CompositeLight: turning off all lights")
         for l in self._lights:
             l.off()
             
-    # Turn a single light on (and the others off)
     def singleOn(self, lightno):
+        """     # Turn a single light on (and the others off) """
+
         print(f"CompositieLight - turning only light #{lightno} on")
         for i in range(0,len(self._lights)):
             if i == lightno:
@@ -44,22 +54,29 @@ class CompositeLight:
             else:
                 self._lights[i].off()
 
-    # The __str__ method - add this to any class to generate a 
-    # Human readable version of the class
     def __str__(self)->str:
+        """
+        # The __str__ method - add this to any class to generate a 
+        # Human readable version of the class
+        """
+        
         return f"{type(self).__name__} with {len(self._lights)} lights"
 
         
-"""
-The first subclass of the CompositeLight class
-Has a gree, yellow and red light that need to be
-passed in
-"""
 class TrafficLight(CompositeLight):
-    # Traffic light constructor
-    # Add the green, yellow and red lights to the array
-    # in that order.
+    """
+    The first subclass of the CompositeLight class
+    Has a gree, yellow and red light that need to be
+    passed in
+    """
+    
     def __init__(self, green, yellow, red):
+        """
+        # Traffic light constructor
+        # Add the green, yellow and red lights to the array
+        # in that order.
+        """
+        
         print("TrafficLight constructor: add the lights in order")
         super().__init__()
         self._lights.append(green)
@@ -78,9 +95,12 @@ class TrafficLight(CompositeLight):
         print("Trafficlight - stop/red")
         self.singleOn(2)
 
-    # The run method - just runs the cycle once, showing
-    # Green, yellow then red, and going back to Green
     def run(self):
+        """
+        # The run method - just runs the cycle once, showing
+        # Green, yellow then red, and going back to Green
+        """
+        
         super().run()
         print("TrafficLight: Run a simple Green-yellow-red sequence")
         if (self._running):
@@ -98,13 +118,15 @@ class TrafficLight(CompositeLight):
         if (self._running):
             self.go()
 
-"""
-The Pixel class - just uses an RGB LED to provide a simple implementation
-of a pixel that can be technically set to any color.
-"""        
 class Pixel(CompositeLight):
-    # Pixel constructor
+    """
+    The Pixel class - just uses an RGB LED to provide a simple implementation
+    of a pixel that can be technically set to any color.
+    """        
+    
     def __init__(self, R, G, B, commoncathode = True):
+        """     # Pixel constructor """
+
         print("Pixel: Constructor - add R G B in that order")
         super().__init__()
         self._lights.append(R)
@@ -126,16 +148,20 @@ class Pixel(CompositeLight):
         else:
             super().on()
        
-    # setColor method - sets to a specific color
-    # Brightness is set as percentage in this app
     def setColor(self, RR, GG, BB):
+        """
+        # setColor method - sets to a specific color
+        # Brightness is set as percentage in this app
+        """
+        
         print(f"Pixel: setColor: R:{RR}, G:{GG}, B:{BB}")
         self._lights[0].setBrightness(RR)
         self._lights[1].setBrightness(GG)
         self._lights[2].setBrightness(BB)
                 
-    # Demo run - just run up and down the R, G, B components
     def run(self):
+        """     # Demo run - just run up and down the R, G, B components """
+
         print("Pixel - run - updown all lights")
         for l in self._lights:
             l.upDown()        
