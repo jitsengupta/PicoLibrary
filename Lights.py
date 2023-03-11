@@ -54,7 +54,7 @@ class DimLight(Light):
         """ Dimmable light constructor """
 
         print("Dimmable light constructor")
-        super().__init__(name, pin)
+        super().__init__(pin, name)
         self._pwm = PWM(self._led)  # Create an instance of PWM object (pulse-width modulation)
         self._pwm.freq(100000)   # set frequency to 100 khz
 

@@ -109,7 +109,7 @@ class SevenSegmentDisplayRaw(Display):
         self._sm.put(self._segmentize(n))
         
     def reset(self):
-        self._sm.put(self._segmentize(0))
+        self._sm.put(0xFFFFFFFF)
 
 class LCDDisplay(Display):
     """
@@ -117,29 +117,26 @@ class LCDDisplay(Display):
     as well as displays directly driven via the d4-d7 pins
     """
     
-    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0):
+    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0, *, sda=-1, scl=-1):
         """
-        constructor for the direct-driven displays
-        """
-        
-        print("LCDDisplay Constructor")
-        self._lcd = GpioLcd(rs_pin=Pin(rs),
-              enable_pin=Pin(e),
-              d4_pin=Pin(d4),
-              d5_pin=Pin(d5),
-              d6_pin=Pin(d6),
-              d7_pin=Pin(d7),
-              num_lines=2, num_columns=16)
-
-    def __init__(self, sda=0, scl=1):
-        """
-        Constructor for the I2C displays
+        Combined constructor for the direct-driven displays
+        explicitly pass in the sda and scl if you need to use I2C
         """
         
-        print("LCDDisplay (I2C) Constructor")
-        i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
-        I2C_ADDR = i2c.scan()[0]
-        self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+        if sda < 0:
+            print("LCDDisplay Constructor")
+            self._lcd = GpioLcd(rs_pin=Pin(rs),
+                enable_pin=Pin(e),
+                d4_pin=Pin(d4),
+                d5_pin=Pin(d5),
+                d6_pin=Pin(d6),
+                d7_pin=Pin(d7),
+                num_lines=2, num_columns=16)
+        else:
+            print("LCDDisplay (I2C) Constructor")
+            i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
+            I2C_ADDR = i2c.scan()[0]
+            self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
 
     def reset(self):
         """ 
@@ -255,5 +252,3 @@ def sevseg():
     out(pins, 8)            .side(8)      # 5
     jmp("0")                .side(0)      # 6
     wrap()
-
-
