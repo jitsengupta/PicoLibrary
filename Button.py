@@ -11,18 +11,22 @@ class Button:
     which button was pressed/released
     """
     
-    def __init__(self, pin, name, buttonhandler=None):
+    def __init__(self, pin, name, *, buttonhandler=None, lowActive=True):
         self._pinNo = pin
         self._name = name
-        self._pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        if lowActive:
+            self._pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        else:
+            self._pin = Pin(pin, Pin.IN, Pin.PULL_DOWN)
         self._debounce_time = 0
+        self._lowActive = lowActive
         self._buttonhandler = buttonhandler
         self._pin.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
 
     def isPressed(self):
         """ Check if the button is pressed or not - useful if polling """
         
-        return self._pin.value()
+        return (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
     
     def setHandler(buttonhandler):
         """ A class that has buttonPressed(name) and buttonReleased(name) methods """
@@ -32,13 +36,14 @@ class Button:
     def _callback(self, pin):
         """ The private interrupt handler - will call appropriate handlers """
         
-        if (time.ticks_ms()-self._debounce_time) > 25:
-            self._debounce_time=time.ticks_ms()
+        t = time.ticks_ms()
+        if (t-self._debounce_time) > 100:
+            self._debounce_time=t
             if self._buttonhandler == None:
                 return
             
-            if (self._pin.value()):
-                self._buttonhandler.buttonReleased(self._name)
-            else:
+            if self.isPressed():
                 self._buttonhandler.buttonPressed(self._name)
-    
+            else:
+                self._buttonhandler.buttonReleased(self._name)
+        self._debounce_time=t
