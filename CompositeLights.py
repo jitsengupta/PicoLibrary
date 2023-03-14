@@ -231,7 +231,7 @@ class NeoPixel(CompositeLight):
             self.rainbow_cycle(0)
 
 
-    ################# Internal functions #################
+    ################# Internal functions should not be used outside here #################
     def pixels_show(self):
         dimmer_ar = array.array("I", [0 for _ in range(self._numleds)])
         for i,c in enumerate(self._ar):

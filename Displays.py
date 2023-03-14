@@ -239,6 +239,74 @@ class OLEDDisplay(Display):
         self._oled.text(text, 0, 0, 1)
         self._oled.show()
 
+class MorseDisplay(Display):
+    """
+    This is a fun class - implement a Morse code display
+    This can play the Morse code via a Buzzer, or show
+    the code via a light, or even display it in another
+    display.
+    
+    We need to make sure the other display is not another
+    MorseDisplay though
+    """
+        
+    def __init__(self, buz=None, light=None, otherDisplay=None):
+        self._buz = buz
+        self._light = light
+        if isinstance(otherDisplay, OLEDDisplay) or isinstance(otherDisplay, LCDDisplay):
+            self._dp = otherDisplay
+        else:
+            self._dp = None
+            print(f"Sorry, {type(otherDisplay).__name__} isn't supported")
+        self._morsedict = {'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+            'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+            'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+            '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.'}
+
+    def showNumber(self, number):
+        """ Just convert the number to a string and show it """
+        
+        showText(self, str(number))
+
+    def showText(self, text):
+        """ Displaying a Morse decoded text on the buzzer, light and possibly display """
+        
+        morse = self._decodeText(text)
+        if self._dp is not None:
+            self._dp.showText(morse)
+        # go through the string each character at a time
+        for char in morse:
+            # if the character is in our dictionary, then get the code
+            if char == ".":
+                self._displaydida(100)
+            elif char == "-":
+                self._displaydida(250)
+            else:
+                time.sleep_ms(250)
+                    
+    ####### Local private methods in MorseDisplay - should not be used from outside ####            
+    def _decodeText(self, text):
+        morse = []
+        for char in text.upper():
+            if char in self._morsedict:
+                morse.append(self._morsedict[char])
+            elif char.isspace():
+                morse.append(' ')
+        return " ".join(morse)
+    
+    def _displaydida(self, sleeptime):
+        if self._buz is not None:
+            self._buz.play()
+        if self._light is not None:
+            self._light.on()
+        time.sleep_ms(sleeptime)
+        if self._buz is not None:
+            self._buz.stop()
+        if self._light is not None:
+            self._light.off()
+        time.sleep_ms(100)
+
 # Internals used by the PIO state machine
 @rp2.asm_pio(out_init=[PIO.OUT_LOW]*8, sideset_init=[PIO.OUT_LOW]*4)
 def sevseg():
