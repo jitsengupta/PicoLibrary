@@ -1,3 +1,5 @@
+"""Source: Instructables, Tom's Hardware and GitHub """
+"""Not Authored by Dr. Sengupta """
 """Implements a HD44780 character LCD connected via ESP32/RPi GPIO pins."""
 
 from lcd_api import LcdApi

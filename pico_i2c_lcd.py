@@ -1,3 +1,6 @@
+"""Source: Instructables, Tom's Hardware and GitHub """
+"""Not Authored by Dr. Sengupta """
+
 import utime
 import gc
 

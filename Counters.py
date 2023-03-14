@@ -1,6 +1,8 @@
 """
-A collection of different kinds of counters that might be used for
-various projects
+# Counters.py
+# A collection of different kinds of counters that might be used for
+# various projects
+# Author: Arijit Sengupta
 """
 
 import time

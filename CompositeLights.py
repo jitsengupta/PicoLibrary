@@ -1,5 +1,9 @@
+"""
+# CompositeLights.py
 # A simple inheritance structure showing a fairly abstract CompositeLight
 # class that has a set of lights, and two different implementations of it
+# Author: Arijit Sengupta
+"""
 
 from time import sleep, sleep_ms
 import array, time

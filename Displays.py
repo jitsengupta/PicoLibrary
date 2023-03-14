@@ -1,9 +1,11 @@
 """
-A collection of various text-based displays
+# Displays.py
+# A collection of various text-based displays
 # Currently supports 4-digit seven-segment displays - both with a tm1637 backpack
 # and without (using PIO)
 # And also LCD 1602 displays - both using an i2c backpack as well as GPIO
 # Only supports number and basic text displays - PIO 7 seg only supports number
+# Author: Arijit Sengupta
 """
 
 from machine import Pin, I2C, SPI

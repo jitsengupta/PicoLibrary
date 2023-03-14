@@ -1,3 +1,8 @@
+"""
+# Buzzer.py - Object-oriented implementation of active and passive buzzers
+# Author: Arijit Sengupta
+"""
+
 import time
 from machine import Pin, PWM
 

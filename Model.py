@@ -1,4 +1,8 @@
+"""
+# Model.py
 # A State model implementation
+# Author: Arijit Sengupta
+"""
 
 BTN1_PRESS = 0
 BTN1_RELEASE = 1

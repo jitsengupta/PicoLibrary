@@ -1,5 +1,7 @@
 """
-A simple Sensor hierarchy
+# Sensors.py
+# A simple Sensor hierarchy for digital and analog sensors
+# Author: Arijit Sengupta
 """
 
 from machine import Pin, ADC

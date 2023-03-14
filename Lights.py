@@ -1,3 +1,11 @@
+"""
+# Lights.py
+# implementation of different types of lights
+# both digitally controlled (on/off)
+# or PWM-controlled (dimming) to set brightness
+# Author: Arijit Sengupta
+"""
+
 import utime
 from machine import Pin, PWM
 import _thread

@@ -1,3 +1,8 @@
+"""
+# Button.py - Object-Oriented implementation of a Button
+# Author: Arijit Sengupta
+"""
+
 from machine import Pin
 import time
 
