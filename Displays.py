@@ -117,9 +117,30 @@ class LCDDisplay(Display):
     """
     LCD Display class - currently supports displays with an I2C backpack
     as well as displays directly driven via the d4-d7 pins
+    
+    Parameters
+    --------
+    This is important since Python does not have method overloading, we have one init
+    to do both parallel as well as i2c displays
+    pass rs, e, d4, d5, d6, d7 pin numbers for parallel displays
+    
+    pass sda, scl, i2cid for i2c displays - default is to use parallel so must pass sda/scl/i2cid
+    if using i2c
+    
+    To connect the display to I2C 0 on GPIO pins 0,1
+    usage: LCDDisplay(sda=0, scl=1, i2cid=0)
+    
+    To connect the display to I2C ID 1 on GPIO pins 2,3
+    usage: LCDDisplay(sda=2, scl=3, i2cid=1)
+    
+    To connect via parallel with rs on pin 5, e on pin 4
+    and d4,d5,d6,d7 to pins 3,2,1 and 0:
+    usage:  LCDDisplay()  # yeah those are the default so you don't need to send
+    usage: LCDDisplay(rs=5, e=4, d4=3, d5=2, d6=1, d7=0) # preferred - you can see how its hooked up
+    
     """
     
-    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0, *, sda=-1, scl=-1):
+    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0, *, sda=-1, scl=-1, i2cid=0):
         """
         Combined constructor for the direct-driven displays
         explicitly pass in the sda and scl if you need to use I2C
@@ -136,7 +157,7 @@ class LCDDisplay(Display):
                 num_lines=2, num_columns=16)
         else:
             print("LCDDisplay (I2C) Constructor")
-            i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
+            i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
             I2C_ADDR = i2c.scan()[0]
             self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
 
@@ -222,10 +243,21 @@ class DotMatrixDisplay(Display):
 class OLEDDisplay(Display):
     """
     OLEDDisplay class - implements an OLED display
+    
+    Only supports I2C connection for now. Pass in sda, scl, i2cid, width and height
+    
+    Usage:
+    Connect to I2C0 on sda to pin 0 and scl to pin 1:
+    
+    OLEDDisplay(sda=0, scl=1, i2cid=0, width=128, height=64)
+    
+    Connect to I2C1 on sda to pin 26, scl to pin 27:
+    OLEDDisplay(sda=26, scl=27, i2cid=1, width=128, height=64) # default values
+    
     """
 
-    def __init__(self, sda=26, scl=27, width=128, height=64):
-        self._i2c = I2C(1, sda=Pin(sda), scl=Pin(scl), freq=400000)
+    def __init__(self, sda=26, scl=27, i2cid=1, width=128, height=64):
+        self._i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
         self._oled = SSD1306_I2C(width, height, self._i2c)
         self.reset()
 

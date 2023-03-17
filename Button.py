@@ -44,11 +44,9 @@ class Button:
         t = time.ticks_ms()
         if (t-self._debounce_time) > 100:
             self._debounce_time=t
-            if self._buttonhandler == None:
-                return
-            
-            if self.isPressed():
-                self._buttonhandler.buttonPressed(self._name)
-            else:
-                self._buttonhandler.buttonReleased(self._name)
+            if self._buttonhandler is not None:
+                if self.isPressed():
+                    self._buttonhandler.buttonPressed(self._name)
+                else:
+                    self._buttonhandler.buttonReleased(self._name)
         self._debounce_time=t
