@@ -16,6 +16,8 @@ import tm1637
 from gpio_lcd import *
 from pico_i2c_lcd import I2cLcd
 from ssd1306 import SSD1306_I2C
+import lcd128_32_fonts
+from lcd128_32 import lcd128_32
 import max7219
 
 class Display:
@@ -158,8 +160,11 @@ class LCDDisplay(Display):
         else:
             print("LCDDisplay (I2C) Constructor")
             i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
-            I2C_ADDR = i2c.scan()[0]
-            self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+            try:
+                I2C_ADDR = i2c.scan()[0]
+                self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+            except:
+                raise ValueError('Could not connect to display - check wiring.')
 
     def reset(self):
         """ 
@@ -240,6 +245,46 @@ class DotMatrixDisplay(Display):
             #Set the Scrolling speed. Here it is 50mS.
             time.sleep(speed/1000)
 
+class LCDHiResDisplay(Display):
+    """
+    LCDHiResDisplay - implements an LCD display which gives access to individual pixels
+    
+    Only supports I2C connection for now. Pass in sda, scl, i2cid, width and height
+    
+    Usage:
+    Connect to I2C0 on sda to pin 0 and scl to pin 1:
+    
+    LCDHiResDisplay(sda=0, scl=1, i2cid=0, width=128, height=32)
+    
+    Connect to I2C0 on sda to pin 20, scl to pin 21:
+    LCDHiResDisplay(sda=20, scl=21, i2cid=0, width=128, height=32) # default values
+    
+    Note that graphics outputs are not supported yet in this library.    
+    """
+    
+    def __init__(self, sda=20, scl=21, i2cid=0, width=128, height=32):
+        print("LCDHiResDisplay (I2C) Constructor")
+        i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
+        I2C_ADDR = i2c.scan()[0]
+        try:
+            I2C_ADDR = i2c.scan()[0]
+            self._lcd = lcd128_32(sda, scl, i2cid, I2C_ADDR)
+            self.reset()
+        except:
+            raise ValueError('Could not connect to display - check wiring.')
+
+    def reset(self):
+        self._lcd.Clear()
+        
+    def showNumber(self, number):
+        self._lcd.Cursor(0,0)
+        self._lcd.display(str(number))
+
+    def showText(self, text):
+        self._lcd.Cursor(0,0)
+        self._lcd.Display(text)
+
+    
 class OLEDDisplay(Display):
     """
     OLEDDisplay class - implements an OLED display
@@ -254,6 +299,7 @@ class OLEDDisplay(Display):
     Connect to I2C1 on sda to pin 26, scl to pin 27:
     OLEDDisplay(sda=26, scl=27, i2cid=1, width=128, height=64) # default values
     
+    Note that graphics outputs are not supported yet in this library.
     """
 
     def __init__(self, sda=26, scl=27, i2cid=1, width=128, height=64):
