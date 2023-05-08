@@ -222,12 +222,12 @@ class DotMatrixDisplay(Display):
         self._dot.fill(0)
         self._dot.show()
 
-    def showNumber(self, number):
-        self._dot.text(str(number), 0, 0, 1)
+    def showNumber(self, number, row = 0, col = 0):
+        self._dot.text(str(number), row, col, 1)
         self._dot.show()
 
-    def showText(self, text):
-        self._dot.text(text, 0, 0, 1)
+    def showText(self, text, row = 0, col = 0):
+        self._dot.text(text, row, col, 1)
         self._dot.show()
 
     def scroll(self, text, speed=50):
@@ -276,12 +276,12 @@ class LCDHiResDisplay(Display):
     def reset(self):
         self._lcd.Clear()
         
-    def showNumber(self, number):
-        self._lcd.Cursor(0,0)
-        self._lcd.display(str(number))
+    def showNumber(self, number, row=0, col=0):
+        self._lcd.Cursor(row,col)
+        self._lcd.Display(str(number))
 
-    def showText(self, text):
-        self._lcd.Cursor(0,0)
+    def showText(self, text, row=0, col=0):
+        self._lcd.Cursor(row,col)
         self._lcd.Display(text)
 
     
@@ -311,12 +311,12 @@ class OLEDDisplay(Display):
         self._oled.fill(0)
         self._oled.show()
         
-    def showNumber(self, number):
-        self._oled.text(str(number), 0, 0, 1)
+    def showNumber(self, number, row=0, col=0):
+        self._oled.text(str(number), row, col, 1)
         self._oled.show()
 
-    def showText(self, text):
-        self._oled.text(text, 0, 0, 1)
+    def showText(self, text, row=0, col=0):
+        self._oled.text(text, row, col, 1)
         self._oled.show()
 
 class MorseDisplay(Display):
