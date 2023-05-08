@@ -75,7 +75,7 @@ class TimeKeeper(Counter):
         
         print("Timekeeper: start")
         """ If timer was already running, the start will get reset to the new time """
-        
+
         self._starttime = time.ticks_ms()
         self._running = True
 
@@ -87,6 +87,14 @@ class TimeKeeper(Counter):
         if self._running:
             self._running = False
             self._count = self._count + time.ticks_diff(time.ticks_ms(),self._starttime)
+
+    def reset(self):
+        """ 
+        Resetting the timer will set count to 0 and starttime to the current time 
+        But timer keeps running if not stopped
+        """
+        super().reset()
+        self._starttime = time.ticks_ms()
 
     def __str__(self) -> str:
         """ Get a string representation of time in HH:MM:SS.ms format """
