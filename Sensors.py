@@ -46,7 +46,7 @@ class DigitalSensor(Sensor):
     def tripped(self)->bool:
         v = self._pinio.value()
         if (self._lowactive and v == 0) or (not self._lowactive and v == 1):
-            print("DigitalLightSensor: sensor detected cover")
+            print("DigitalLightSensor: sensor tripped")
             return True
         else:
             return False
@@ -71,7 +71,7 @@ class AnalogSensor(Sensor):
         
         v = self.rawValue()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            print("AnalogLightSensor: sensor detected cover")
+            print("AnalogLightSensor: sensor tripped")
             return True
         else:
             return False
