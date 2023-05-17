@@ -129,7 +129,7 @@ class HardwareTimer(Counter):
         """ Start the timer with the number of seconds to use. """
         
         self._count = seconds
-        self._timer.init(period = seconds*1000, mode=Timer.ONE_SHOT, callback = self.timeout)
+        self._timer.init(period = int(seconds*1000), mode=Timer.ONE_SHOT, callback = self.timeout)
         self._started = True
 
     def cancel(self):
