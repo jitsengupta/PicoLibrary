@@ -129,11 +129,11 @@ class HardwareTimer(Counter):
         """ Start the timer with the number of seconds to use. """
         
         self._count = seconds
-        self._timer.init(period = seconds*1000, mode=Timer.PERIODIC, callback = self._handler.timeout())
+        self._timer.init(period = seconds*1000, mode=Timer.ONE_SHOT, callback = self.timeout)
         self._started = True
 
     def cancel(self):
-        """ Cancel the timer. Note that a normal stop will cause tha handler callback. """
+        """ Cancel the timer. Note that a normal stop will cause the handler callback. """
         
         if self._started:
             self._timer.deinit()
@@ -145,6 +145,10 @@ class HardwareTimer(Counter):
         
         super().reset()
         self.cancel()
+        
+    def timeout(self, timer):
+        self.cancel()
+        self._handler.timeout()
 
 class SoftwareTimer(Counter):
     """
