@@ -3,6 +3,8 @@
 # A State model implementation
 # Author: Arijit Sengupta
 """
+import time
+
 
 BTN1_PRESS = 0
 BTN1_RELEASE = 1
@@ -65,6 +67,8 @@ class Model:
         self._curState = -1
         self._handler = handler
         self._debug = debug
+        self._buttons = []
+        self._timer = None
 
     def addTransition(self, fromState, event, toState):
         """
@@ -130,5 +134,75 @@ class Model:
                 if self._debug:
                     print(f"Processing event {EVENTNAMES[event]}")
                 self.gotoState(self._transitions[self._curState][event])
-            
 
+    def run(self, delay=0.1):        
+        # Start the model first
+        self.start()
+        # Then it should do a continous loop while the model runs
+        while self._running:
+            # Inside, you can use if statements do handle various do/actions
+            # that you need to perform for each state
+            # Do not perform entry and exit actions here - those are separate
+                        
+            self._handler.stateDo(self._curState)
+            
+            # Ping the timer if it is a software timer
+            if self._timer is not None and type(self._timer).__name__ == 'SoftwareTimer':
+                self._timer.check()
+            
+            # I suggest putting in a short wait so you are not overloading the poor Pico
+            if delay > 0:
+                time.sleep(delay)
+
+    def addButton(self, btn):
+        if len(self._buttons) < 4:
+            btn.setHandler(self)
+            self._buttons.append(btn)
+        else:
+            raise ValueError('Currently we only support up to 4 buttons')
+
+    def buttonPressed(self, name):
+        """ 
+        The internal button handler - now Model can take care of buttons
+        that have been added using the addButton method.
+        """
+
+        for i in range(0,len(self._buttons)):
+            if name == self._buttons[i]._name:
+                if i == 0:
+                    self.processEvent(BTN1_PRESS)
+                elif i == 1:
+                    self.processEvent(BTN2_PRESS)
+                elif i == 2:
+                    self.processEvent(BTN3_PRESS)
+                elif i == 3:
+                    self.processEvent(BTN4_PRESS)
+
+    """
+    Same thing with Button release, if you want to handle release events
+    As well as press or just want to do release events only.
+    """
+    def buttonReleased(self, name):
+        for i in range(0,len(self._buttons)):
+            if name == self._buttons[i]._name:
+                if i == 0:
+                    self.processEvent(BTN1_RELEASE)
+                elif i == 1:
+                    self.processEvent(BTN2_RELEASE)
+                elif i == 2:
+                    self.processEvent(BTN3_RELEASE)
+                elif i == 3:
+                    self.processEvent(BTN4_RELEASE)
+
+    def addTimer(self, timer):
+        self._timer = timer
+        self._timer.setHandler(self)
+
+    """
+    If you are using a timer, handle the timeout callback
+    My model can use timeout events for transitions, so simply
+    send the event to the model and it will take care of
+    the rest.
+    """
+    def timeout(self):
+        self.processEvent(TIMEOUT)

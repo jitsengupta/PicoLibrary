@@ -35,13 +35,24 @@ class MyControllerTemplate:
     def __init__(self):
         
         # Instantiate whatever classes from your own model that you need to control
-        self._button = Button(15, "button1", buttonhandler=self)
-        self._timer = SoftwareTimer(self)
+        # Handlers can now be set to None - we will add them to the model and it will
+        # do the handling
+        self._button = Button(10, "button1", buttonhandler=None)
+        self._timer = SoftwareTimer(None)
         
         # Instantiate a Model. Needs to have the number of states, self as the handler
         # You can also say debug=True to see some of the transitions on the screen
         # Here is a sample for a model with 4 states
         self._model = Model(2, self, debug=True)
+        
+        # Up to 4 buttons and a timer can be added to the model for use in transitions
+        # Buttons must be added in the sequence you want them used. The first button
+        # added will respond to BTN1_PRESS and BTN1_RELEASE, for example
+        self._model.addButton(self._button)
+        # add other buttons (up to 3 more) if needed
+        
+        # Add any timer you have.
+        self._model.addTimer(self._timer)
         
         # Now add all the transitions that are supported by my Model
         # obvously you only have BTN1_PRESS through BTN4_PRESS
@@ -60,42 +71,29 @@ class MyControllerTemplate:
     """
 
     def run(self):
-        # The run method should first start the model
-        self._model.start()
+        # The run method should simply do any initializations (if needed)
+        # and then call the model's run method.
+        # You can send a delay as a parameter if you want something other
+        # than the default 0.1s. e.g.,  self._model.run(0.25)
+        self._model.run()
 
-        # Then it should do a continous loop while the model runs
-        while self._model._running:
-            # Inside, you can use if statements do handle various do/actions
-            # that you need to perform for each state
-            # Do not perform entry and exit actions here - those are separate
+    """
+    stateDo - the method that handles the do/actions for each state
+    """
+    def stateDo(self, state):
             
-            # You can see which state the model is in (yeah i know)
-            curstate = self._model._curState
-            
-            # Now if you want to do different things for each state you can do it:
-            if curstate == 0:
-                # State 0 do/actions
-                pass
-            elif curstate == 1:
-                # State1 do/actions
-                # You can check your sensors here and perform transitions manually if needed
-                # For example, if you want to go from state 1 to state 2 when the motion sensor
-                # is tripped you can do something like this
-                # if self.motionsensor.tripped():
-                # 	gotoState(2)
-                pass
-            
-            #etc.
-
-            # If you are using a software timer, you will need to do a poll to
-            # see if the timer has timed out. Hardware timer does not need polling
-            # Note that Wokwi does not do well with Hardware timers
-            
-            self._timer.check()
-            
-            # I suggest putting in a short wait so you are not overloading the poor Pico
-            time.sleep(0.1)
-
+        # Now if you want to do different things for each state you can do it:
+        if state == 0:
+            # State 0 do/actions
+            pass
+        elif state == 1:
+            # State1 do/actions
+            # You can check your sensors here and perform transitions manually if needed
+            # For example, if you want to go from state 1 to state 2 when the motion sensor
+            # is tripped you can do something like this
+            # if self.motionsensor.tripped():
+            # 	gotoState(2)
+            pass
 
     """
     stateEntered - is the handler for performing entry/actions
@@ -127,36 +125,6 @@ class MyControllerTemplate:
         pass
 
     
-    """
-    If you are using buttons, you create the button handlers here.
-    Associate up to 4 buttons with BTN1_PRESS through BTN4_PRESS
-    """
-    def buttonPressed(self, name):
-        # For example, lets say the start button is BTN1 and stop button is BTN2
-        if name == "button1":
-            self._model.processEvent(BTN1_PRESS)
-        # if you have multiple buttons, feel free to add them. Up to 4 buttons
-        # are supported by the model right now.
-        elif name == "button2":
-            self._model.processEvent(BTN2_PRESS)
-
-    """
-    Same thing with Button release, if you want to handle release events
-    As well as press or just want to do release events only.
-    """
-    def buttonReleased(self, name):
-        pass
-
-
-    """
-    If you are using a timer, handle the timeout callback
-    My model can use timeout events for transitions, so simply
-    send the event to the model and it will take care of
-    the rest.
-    """
-    def timeout(self):
-        self._model.processEvent(TIMEOUT)
-        
 
 # Test your model. Note that this only runs the template class above
 # If you are using a separate main.py or other control script,

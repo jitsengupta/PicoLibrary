@@ -106,51 +106,72 @@ class TimeKeeper(Counter):
         hr = (curtime // 3600000)
         return f"{hr:02d}:{min:02d}:{sec:02d}.{ms:03d}"
 
-class HardwareTimer(Counter):
+
+class BaseTimer(Counter):
+    """ 
+    Decided to create a base class for the Software and Hardware timers
+    since there are many properties in common. Now allowing no handlers in init
+    but obviously a handler has to be set in order to ensure something happens when
+    the time runs out.
     """
-    This uses the hardware internal timer of the Pico. This does NOT WORK on the simulator!
-    The internal count here is the timer setting that is not updated until reset or cancelled
-    
-    """
-    
-    def __init__(self, handler):
-        """
-        A hardware timer must be initialized with a handler. The handler must implement
-        a timeout() method which will be called when the timer is up. Ideally, there
-        should only be a single timer active at a time.
-        """
-        
+
+    def __init__(self, handler=None):
         super().__init__()
         self._handler = handler
-        self._timer = Timer(-1)
         self._started = False
 
+    def setHandler(self, handler):
+        self._handler = handler
+
     def start(self, seconds):
-        """ Start the timer with the number of seconds to use. """
-        
         self._count = seconds
-        self._timer.init(period = int(seconds*1000), mode=Timer.ONE_SHOT, callback = self.timeout)
         self._started = True
 
     def cancel(self):
-        """ Cancel the timer. Note that a normal stop will cause the handler callback. """
-        
-        if self._started:
-            self._timer.deinit()
         self._started = False
         self._count = 0
-    
+
     def reset(self):
         """ Make sure reset cancels the timer first """
         
         super().reset()
         self.cancel()
         
+class HardwareTimer(BaseTimer):
+    """
+    This uses the hardware internal timer of the Pico. This does NOT WORK on the simulator!
+    The internal count here is the timer setting that is not updated until reset or cancelled
+    
+    """
+    
+    def __init__(self, handler=None):
+        """
+        A hardware timer must be initialized with a handler. The handler must implement
+        a timeout() method which will be called when the timer is up. Ideally, there
+        should only be a single timer active at a time.
+        """
+        
+        super().__init__(handler)
+        self._timer = Timer(-1)
+
+    def start(self, seconds):
+        """ Start the timer with the number of seconds to use. """
+        
+        super().__start(seconds)
+        self._timer.init(period = int(seconds*1000), mode=Timer.ONE_SHOT, callback = self.timeout)
+
+    def cancel(self):
+        """ Cancel the timer. Note that a normal stop will cause the handler callback. """
+        
+        if self._started:
+            self._timer.deinit()
+        super().cancel()
+    
     def timeout(self, timer):
         self.cancel()
         self._handler.timeout()
 
-class SoftwareTimer(Counter):
+class SoftwareTimer(BaseTimer):
     """
     A simpler software-based timer that will work on the simulator as well. Caller
     again implements a handler method, but will need to poll the timer using the
@@ -178,14 +199,7 @@ class SoftwareTimer(Counter):
         if self._started:
             self._starttime = 0
             print(f"{self._count} sec timer cancelled")
-        self._started = False
-        self._count = 0
-
-    def reset(self):
-        """ Make sure reset cancels the timer first """
-        
-        super().reset()
-        self.cancel()
+        super().cancel()
 
     def check(self):
         """

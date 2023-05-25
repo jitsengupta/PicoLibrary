@@ -33,7 +33,7 @@ class Button:
         
         return (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
     
-    def setHandler(buttonhandler):
+    def setHandler(self, buttonhandler):
         """ A class that has buttonPressed(name) and buttonReleased(name) methods """
         
         self._buttonhandler = buttonhandler
