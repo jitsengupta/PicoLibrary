@@ -195,6 +195,8 @@ class NeoPixel(CompositeLight):
         self._pin = pin
         self._numleds = numleds
         self._brightness = brightness
+        self._running = False
+
         # Create the StateMachine with the ws2812 program, outputting on pin
         self._sm = rp2.StateMachine(0, ws2812, freq=8_000_000, sideset_base=Pin(self._pin))
 
@@ -212,7 +214,8 @@ class NeoPixel(CompositeLight):
     
     def off(self):
         """ Turn all LEDs OFF - all black """
-
+        self._running = False
+        sleep(0.1)
         self.pixels_fill(BLACK)
         self.pixels_show()
 
@@ -220,19 +223,25 @@ class NeoPixel(CompositeLight):
         self._brightness = brightness
 
     def run(self, runtype=0):
+        self._running = True
         if runtype == NeoPixel.FILLS:
             print("fills")
-            for color in COLORS:       
+            for color in COLORS:
+                if not self._running:
+                    break       
                 self.pixels_fill(color)
                 self.pixels_show()
                 sleep(0.2)
         elif runtype == NeoPixel.CHASES:
             print("chases")
-            for color in COLORS:       
+            for color in COLORS:
+                if not self._running:
+                    break       
                 self.color_chase(color, 0.01)
         else:
             print("rainbow")
             self.rainbow_cycle(0)
+        self._running = False
 
 
     ################# Internal functions should not be used outside here #################
@@ -255,6 +264,8 @@ class NeoPixel(CompositeLight):
 
     def color_chase(self, color, wait):
         for i in range(self._numleds):
+            if not self._running:
+                break
             self.pixels_set(i, color)
             sleep(wait)
             self.pixels_show()
@@ -276,6 +287,8 @@ class NeoPixel(CompositeLight):
     
     def rainbow_cycle(self, wait):
         for j in range(255):
+            if not self._running:
+                break
             for i in range(self._numleds):
                 rc_index = (i * 256 // self._numleds) + j
                 self.pixels_set(i, self.wheel(rc_index & 255))
