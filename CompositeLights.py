@@ -139,9 +139,11 @@ class Pixel(CompositeLight):
         self._lights.append(G)
         self._lights.append(B)
         self._commoncathode = commoncathode
+        self._running = False
         
     def on(self):
         print("Pixel: turning all components on")
+        self._running = False
         if self._commoncathode:
             super().on()
         else:
@@ -149,6 +151,7 @@ class Pixel(CompositeLight):
             
     def off(self):
         print("Pixel: turning all components off")
+        self._running = False
         if self._commoncathode:
             super().off()
         else:
@@ -165,12 +168,18 @@ class Pixel(CompositeLight):
         self._lights[1].setBrightness(GG)
         self._lights[2].setBrightness(BB)
                 
-    def run(self):
+    def run(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
+        self._running = True
 
-        print("Pixel - run - updown all lights")
-        for l in self._lights:
-            l.upDown()        
+        colors = [[255,0,0], [255,165,0], [255,255,0], [0,128,0],[0,0,255],[75,0,130],[238,130,238]]
+        print("Pixel - run - rainbow demo")
+        for c in colors:
+            if not self._running:
+                break
+            self.setColor(c[0],c[1],c[2])
+            sleep_ms(delay)        
+        self._running = False
          
 class NeoPixel(CompositeLight):
     """
