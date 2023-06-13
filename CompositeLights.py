@@ -228,6 +228,24 @@ class NeoPixel(CompositeLight):
         self.pixels_fill(BLACK)
         self.pixels_show()
 
+    def setColor(self, color, numPixels= -1):
+        """
+        Change the pixel colors to a specific color
+        Color can be provided as a list (R,G,B) or pick one from the
+        pre-defined colors below.
+        
+        Send a numPixels parameter to only light up a subset of the LEDs
+        Sending a negative value will light up all lights
+        """
+        
+        if numPixels < 0 or numPixels > len(self._ar):
+            numPixels = len(self._ar)
+        for i in range(numPixels):
+            self.pixels_set(i, color)
+        for i in range(numPixels,len(self._ar)):
+            self.pixels_set(i, BLACK)
+        self.pixels_show()
+
     def setBrightness(self, brightness=0.5):
         self._brightness = brightness
 
