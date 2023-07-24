@@ -65,12 +65,14 @@ class DimLight(Light):
         super().__init__(pin, name)
         self._pwm = PWM(self._led)  # Create an instance of PWM object (pulse-width modulation)
         self._pwm.freq(100000)   # set frequency to 100 khz
+        self._onState = False
         self._running = False
 
     def on(self):
         """ Turn on - full brightness max is 255 """
         
         self._running = False
+        self._onState = True
         print(f"Dimlight: turn Light {self._name} on (full brightness)")
         self.setBrightness(MAX)
 
@@ -78,9 +80,19 @@ class DimLight(Light):
         """  Turn off - set brightness to 0 """
         
         self._running = False
+        self._onState = False
         print(f"Dimlight - turn Light {self._name} off (brightness 0)")
         self.setBrightness(0)
 
+    def flip(self):
+        """ flip: turn off if it was on, on if it was off """
+        
+        print(f"Light: Toggling {self._name} light at pin {self._pin}")
+        if self._onState:
+            self.off()
+        else:
+            self.on()       
+        
     def setBrightness(self, brightness):
         """ Set brightness to a specific level 0-255 """
 
@@ -89,6 +101,11 @@ class DimLight(Light):
             self._pwm.duty_u16(MAX)
         else:
             self._pwm.duty_u16(brightness * brightness)
+        
+        if brightness < 50:
+            self._onState = False
+        else:
+            self._onState = True
 
     def upDown(self):
         """
