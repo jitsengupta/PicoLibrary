@@ -204,6 +204,28 @@ class LCDDisplay(Display):
         self._lcd.move_to(col, row)
         self._lcd.putstr(text)
 
+    def scroll(self, text, row=0, speed=100, skip=2):
+        """
+        A very simple scroll implementation
+        Scrolls some text right to left in a row
+
+        speed is essentially the delay between refresh - lower the better
+        skip is the number of chars to skip for the next refresh
+        higher number will be faster but may be jerky. lower will be smooth
+        but slower.
+
+        I2C devices may not have best scrolling performance. Works
+        better with GPIO-driven displays
+        """
+
+        print(f"LCDDisplay - scrolling text {text} in row {row}")
+        for p in range(0,len(text)+skip, skip):
+            curst = (text+' '*(16+skip))[p:p+16]
+            for c in range(16,0,-1):
+                self._lcd.move_to(c-1, row)
+                self._lcd.putchar(curst[c-1])
+            time.sleep(speed/1000)
+
 class DotMatrixDisplay(Display):
     """
     An implementation of the MAX7219 Dot Matrix display
