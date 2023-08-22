@@ -37,7 +37,7 @@ class MyControllerTemplate:
         # Instantiate whatever classes from your own model that you need to control
         # Handlers can now be set to None - we will add them to the model and it will
         # do the handling
-        self._button = Button(10, "button1", buttonhandler=None)
+        self._button = Button(20, "button1", buttonhandler=None)
         self._timer = SoftwareTimer(None)
         
         # Instantiate a Model. Needs to have the number of states, self as the handler
@@ -60,8 +60,8 @@ class MyControllerTemplate:
         # and TIMEOUT
         
         # some examples:
-        self._model.addTransition(0, BTN1_PRESS, 1)
-        self._model.addTransition(1, TIMEOUT, 0)
+        self._model.addTransition(0, [BTN1_PRESS], 1)
+        self._model.addTransition(1, [TIMEOUT], 0)
         # etc.
     
     """
@@ -100,7 +100,7 @@ class MyControllerTemplate:
     You get the state number of the state that just entered
     Make sure actions here are quick
     """
-    def stateEntered(self, state):
+    def stateEntered(self, state, event):
         # Again if statements to do whatever entry/actions you need
         if state == 0:
             # entry actions for state 0
@@ -121,7 +121,7 @@ class MyControllerTemplate:
     This is just like stateEntered, perform only exit/actions here
     """
 
-    def stateLeft(self, state):
+    def stateLeft(self, state, event):
         pass
 
     
