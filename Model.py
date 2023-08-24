@@ -33,10 +33,20 @@ class Model:
     stateLeft receives the state that was entered or left,
     with the event code that caused it. stateDo only receives the current
     state.
-
+    
         stateEntered(state, event)
         stateLeft(state, event)
         stateDo(state)
+
+    Currently there are 10 hardcoded events that are supported.
+    
+    * BTN1_PRESS/RELEASE through BTN4_PRESS/RELEASE are for button presses
+    and releases - in the order they are created.
+    * TIMEOUT is the event for a software or hardware timer. Only one
+    timer can be active at a time
+    * NO_EVENT is for non-event-related transitions. So if a state performs 
+    the entry actions and do actions and then immediately goes to the next state, 
+    NO_EVENT can be used. 
 
     The calling class or the handler must override stateEntered and
     stateLeft to perform actions as per the state model
@@ -134,7 +144,8 @@ class Model:
             newstate = self._transitions[self._curState][event]
             if newstate is None:
                 if self._debug:
-                    print(f"Ignoring event {EVENTNAMES[event]}")
+                    if event != NO_EVENT:
+                        print(f"Ignoring event {EVENTNAMES[event]}")
             else:
                 if self._debug:
                     print(f"Processing event {EVENTNAMES[event]}")
@@ -150,7 +161,7 @@ class Model:
             # Do not perform entry and exit actions here - those are separate
                         
             self._handler.stateDo(self._curState)
-            
+            self.processEvent(NO_EVENT)
             # Ping the timer if it is a software timer
             if self._timer is not None and type(self._timer).__name__ == 'SoftwareTimer':
                 self._timer.check()
