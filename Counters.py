@@ -49,7 +49,7 @@ class UpDownCounter(Counter):
         
         print("Updowncounter decrementing")
         if (self._min is None or self._count - step >= self._min):
-            self._count = self._count + step
+            self._count = self._count - step
 
     def __str__(self)->str:
         """ a string representation of the internal count """
