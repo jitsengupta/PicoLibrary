@@ -1,10 +1,12 @@
 """
 # Sensors.py
 # A simple Sensor hierarchy for digital and analog sensors
+# Added support for Ultrasonic Sensor on 9/11/23
 # Author: Arijit Sengupta
 """
 
 from machine import Pin, ADC
+import utime
 
 class Sensor:
     """
@@ -78,3 +80,54 @@ class AnalogSensor(Sensor):
 
     def rawValue(self):
         return self._pinio.read_u16()
+
+
+class UltrasonicSensor(Sensor):
+    """
+    A simple implementation of an ultrasonic sensor with digital IO
+    pins for trigger and echo.
+    
+    While technically Ultrasonic sensor is not an analog sensor since it
+    uses digital pins, it does have continuous data, so subclassing
+    AnalogSensor makes more sense. But given AnalogSensor should only be
+    used in ADC pins, it is better to subclass the Sensor superclass.
+    
+    Continuing to use the lowactive and threshold like AnalogSensor however.
+
+    init by sending trigger, echo and optionally lowactive and threshold
+    parameters. Threshold defaults to 10cm, and lowactive defaults to true
+    so when distance is < 10cm, it will return true for tripped.
+    """
+
+    def __init__(self, trigger, echo, *, lowactive = True, threshold=10.0):
+        super().__init__(trigger, lowactive)
+        self._trigger = Pin(trigger, Pin.OUT)
+        self._echo = Pin(echo, Pin.IN)
+        self._threshold = threshold
+
+    def getDistance(self)->float:
+        """ Get the distance of obstacle from the sensor in cm """
+        
+        self._trigger.low()
+        utime.sleep_us(2)
+        self._trigger.high()
+        utime.sleep_us(5)
+        self._trigger.low()
+        while self._echo.value() == 0:
+            signaloff = utime.ticks_us()
+        while self._echo.value() == 1:
+            signalon = utime.ticks_us()
+        timepassed = signalon - signaloff
+        distance = (timepassed * 0.0343) / 2
+        return distance
+
+    def tripped(self)->bool:
+        """ sensor is tripped if distance is higher or lower than threshold """
+        
+        v = self.getDistance()
+        if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
+            print("UltrasonicSensor: sensor tripped")
+            return True
+        else:
+            return False
+
