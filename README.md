@@ -20,4 +20,6 @@ Currently supported hardware - (more to be added)
 * LED matrix displays - (MAX7219 driver)
 * Sensors - both ditigal (0/1) as well as Analog (ADC 16 bit) sensors
 
-Contact Dr. Sengupta if you need support for any other hardware
+Contact Dr. Sengupta if you need support for any other hardware.
+
+This is my change on the fork.
