@@ -53,11 +53,11 @@ class LightStrip(Light):
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
-        if numPixels < 0 or numPixels > len(self._ar):
-            numPixels = len(self._ar)
+        if numPixels < 0 or numPixels > self._numleds:
+            numPixels = self._numleds
         for i in range(numPixels):
             self._pix.set_pixel(i, color)
-        for i in range(numPixels,len(self._ar)):
+        for i in range(numPixels,self._numleds):
             self._pix.set_pixel(i, BLACK)
         self._pix.show()
 
@@ -80,7 +80,7 @@ class LightStrip(Light):
                 if not self._running:
                     break       
                 self.setColor(color)
-                sleep(0.2)
+                time.sleep(0.2)
         elif runtype == LightStrip.CHASES:
             print("chases")
             for color in COLORS:
