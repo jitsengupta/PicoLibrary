@@ -35,7 +35,7 @@ class LightStrip(Light):
         self._running = False
 
         # Create the StateMachine with the ws2812 program, outputting on pin
-        self._pix = neopixel.Neopixel(numleds, 1, pin, "RGB")
+        self._pix = neopixel.Neopixel(numleds, 1, pin, "GRB")
         self._pix.brightness(int(brightness * 255))
 
     def on(self):
