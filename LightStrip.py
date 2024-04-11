@@ -1,12 +1,10 @@
 """
 # LightStrip.py
 # Re-implementing the old NeoPixel class into a LightStrip class
-# This separates out the single internal state machine so it is not used
-# for other composite lights if any
-# Also moved to a more capable NeoPixel library by blaz-r
+# Using the built-in neopixel class in MicroPython now
 """
 
-import time, neopixel
+import time, neopixel, machine
 from Lights import *
 
 class LightStrip(Light):
@@ -35,41 +33,41 @@ class LightStrip(Light):
         self._running = False
 
         # Create the StateMachine with the ws2812 program, outputting on pin
-        self._pix = neopixel.Neopixel(numleds, 1, pin, "GRB")
-        self._pix.brightness(int(brightness * 255))
+        self._np = neopixel.NeoPixel(machine.Pin(pin), numleds)
+        #self._pix = neopixel.Neopixel(numleds, 1, pin, "GRB")
+        #self._pix.brightness(int(brightness * 255))
 
     def on(self):
         """ Turn all LEDs ON - all white """
 
-        self._pix.fill(WHITE)
-        self._pix.show()
+        self._fill(WHITE)
+        self._np.write()
     
     def off(self):
         """ Turn all LEDs OFF - all black """
         self._running = False
         time.sleep(0.1)
-        self._pix.clear()
-        self._pix.show()
+        self._clear()
+        self._np.write()
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
         if numPixels < 0 or numPixels > self._numleds:
             numPixels = self._numleds
         for i in range(numPixels):
-            self._pix.set_pixel(i, color)
+            self._set_pixel(i, color)
         for i in range(numPixels,self._numleds):
-            self._pix.set_pixel(i, BLACK)
-        self._pix.show()
+            self._set_pixel(i, BLACK)
+        self._np.write()
 
     def setPixel(self, pixelno, color):
         """ Turn a single pixel a specific color """
-        self._pix.set_pixel(pixelno, color)
-        self._pix.show()
+        self._set_pixel(pixelno, color)
+        self._np.write()
 
     def setBrightness(self, brightness=0.5):
         """ Change the brightness of the pixel 0-1 range """
         self._brightness = brightness
-        self._pix.brightness(int(brightness * 255))
 
     def run(self, runtype=0):
         """ Run a single cycle of FILLS, CHASES or RAINBOW """
@@ -94,13 +92,26 @@ class LightStrip(Light):
 
 
     ################# Internal functions should not be used outside here #################
+    def _set_pixel(self, p, color):
+        modifiedcolor = tuple(int(col*self._brightness) for col in color)
+        self._np[p] = modifiedcolor
+
+    def _clear(self):
+        self._np.fill(BLACK)
+        pass
+
+    def _fill(self, color):
+        self._np.fill(color)
+        pass
+
+
     def color_chase(self, color, wait):
         for i in range(self._numleds):
             if not self._running:
                 break
-            self._pix.set_pixel(i, color)
+            self._set_pixel(i, color)
             time.sleep(wait)
-            self._pix.show()
+            self._np.write()
         time.sleep(0.2)
     
     def wheel(self, pos):
@@ -123,8 +134,8 @@ class LightStrip(Light):
                 break
             for i in range(self._numleds):
                 rc_index = (i * 256 // self._numleds) + j
-                self._pix.set_pixel(i, self.wheel(rc_index & 255))
-            self._pix.show()
+                self._set_pixel(i, self.wheel(rc_index & 255))
+            self._np.write()
             time.sleep(wait)
 
 
