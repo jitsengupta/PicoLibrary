@@ -11,6 +11,7 @@
 from machine import Pin, I2C, SPI
 import rp2
 import time
+from Log import *
 from rp2 import PIO
 import tm1637
 from gpio_lcd import *
@@ -27,16 +28,16 @@ class Display:
     """
 
     def reset(self):
-        print(f"reset NOT IMPLEMENTED in {type(self).__name__}")
+        Log.e(f"reset NOT IMPLEMENTED in {type(self).__name__}")
 
     def showNumber(self, number):
-        print(f"showNumber NOT IMPLEMENTED! in {type(self).__name__}")
+        Log.e(f"showNumber NOT IMPLEMENTED! in {type(self).__name__}")
 
     def showText(self, text):
-        print(f"showText NOT IMPLEMENTED! in {type(self).__name__}")
+        Log.e(f"showText NOT IMPLEMENTED! in {type(self).__name__}")
 
     def scroll(self, text, speed=250):
-        print(f"Scroll NOT IMPLEMENTED! in {type(self).__name__}")
+        Log.e(f"Scroll NOT IMPLEMENTED! in {type(self).__name__}")
 
 
 class SevenSegmentDisplay(Display):
@@ -149,7 +150,7 @@ class LCDDisplay(Display):
         """
         
         if sda < 0:
-            print("LCDDisplay Constructor")
+            Log.i("LCDDisplay Constructor")
             self._lcd = GpioLcd(rs_pin=Pin(rs),
                 enable_pin=Pin(e),
                 d4_pin=Pin(d4),
@@ -158,7 +159,7 @@ class LCDDisplay(Display):
                 d7_pin=Pin(d7),
                 num_lines=2, num_columns=16)
         else:
-            print("LCDDisplay (I2C) Constructor")
+            Log.i("LCDDisplay (I2C) Constructor")
             i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
             try:
                 I2C_ADDR = i2c.scan()[0]
@@ -171,7 +172,7 @@ class LCDDisplay(Display):
         clear the display screen
         """
         
-        print("LCDDisplay: reset")
+        Log.i("LCDDisplay: reset")
         self._lcd.clear()
 
     def showNumber(self, number, row=0, col=0):
@@ -179,7 +180,7 @@ class LCDDisplay(Display):
         show a single number
         """
         
-        print(f"LCDDisplay - showing number {number} at {row},{col}")
+        Log.i(f"LCDDisplay - showing number {number} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(f"{number}")
 
@@ -189,7 +190,7 @@ class LCDDisplay(Display):
         by default, the colon is shown
         """
         
-        print(f"LCDDisplay - showing numbers {num1}, {num2} at {row},{col}")
+        Log.i(f"LCDDisplay - showing numbers {num1}, {num2} at {row},{col}")
         self._lcd.move_to(col, row)
         colsym = ":" if colon else " "
         self._lcd.putstr(f"{num1}{colsym}{num2}")
@@ -200,7 +201,7 @@ class LCDDisplay(Display):
         for anything bigger than 4 characters.
         """
         
-        print(f"LCDDisplay - showing text {text} at {row},{col}")
+        Log.i(f"LCDDisplay - showing text {text} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(text)
 
@@ -218,7 +219,7 @@ class LCDDisplay(Display):
         better with GPIO-driven displays
         """
 
-        print(f"LCDDisplay - scrolling text {text} in row {row}")
+        Log.i(f"LCDDisplay - scrolling text {text} in row {row}")
         for p in range(0,len(text)+skip, skip):
             curst = (text+' '*(16+skip))[p:p+16]
             for c in range(16,0,-1):
@@ -285,7 +286,7 @@ class LCDHiResDisplay(Display):
     """
     
     def __init__(self, sda=20, scl=21, i2cid=0, width=128, height=32):
-        print("LCDHiResDisplay (I2C) Constructor")
+        Log.i("LCDHiResDisplay (I2C) Constructor")
         i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
         I2C_ADDR = i2c.scan()[0]
         try:
@@ -359,7 +360,7 @@ class MorseDisplay(Display):
             self._dp = otherDisplay
         else:
             self._dp = None
-            print(f"Sorry, {type(otherDisplay).__name__} isn't supported")
+            Log.e(f"Sorry, {type(otherDisplay).__name__} isn't supported")
         self._morsedict = {'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
             'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
             'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',

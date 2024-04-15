@@ -6,6 +6,7 @@
 
 from machine import Pin, ADC
 import time
+from Log import *
 
 class Button:
     """
@@ -20,6 +21,7 @@ class Button:
     def __init__(self, pin, name, *, buttonhandler=None, lowActive=True):
         self._pinNo = pin
         self._name = name
+        Log.i(f'Button constructor: create button {name} at pin {pin}')
         if lowActive:
             self._pin = Pin(pin, Pin.IN, Pin.PULL_UP)
         else:
@@ -85,6 +87,7 @@ class Joystick(Button):
     def __init__(self, vpin, hpin, swpin, name, *, buttonhandler=None, delta=1000):
         # Let the superclass handle all button functionality
         super().__init__(swpin, name, buttonhandler=buttonhandler, lowActive=True)
+        Log.i(f'Joystick constructor: create joystick at v:{vpin}, h:{hpin}')
 
         # H and V axis pins must be standard ADC supporting
         if vpin <26 or vpin > 28 or hpin < 26 or hpin > 28:

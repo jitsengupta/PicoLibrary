@@ -6,6 +6,7 @@ for example, using an actual 7 led bar - maybe with a shift register
 """
 from Displays import *
 from LightStrip import *
+from Log import *
 
 class LevelDisplay:
     """
@@ -36,6 +37,7 @@ class LevelDisplay:
             self._curlevel = self._levels
         else:
             self._curlevel = int(self._levels * levelpct / 100)
+        Log.i(f'Showing {levelpct}% with {self._curlevel} levels')
         
 class LightStripLevel(LevelDisplay):
     """
@@ -47,6 +49,7 @@ class LightStripLevel(LevelDisplay):
         
         super().__init__(strip._numleds)
         self._strip = strip
+        Log.i("Creating a Light strip level") 
         
     def showLevel(self, levelpct):
         """ Show the level in the light strip. """
@@ -68,6 +71,7 @@ class LCDLevel(LevelDisplay):
         # LCD display can only show 8 levels so we are fixing it
         super().__init__(8)
         self._display = display
+        Log.i("Creating an LCD level") 
         
         # Add the custom chars to the PRAM
         for p in range(0,8):

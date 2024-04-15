@@ -5,6 +5,7 @@
 
 import time
 from machine import Pin, PWM
+from Log import *
 
 class Buzzer:
     """
@@ -14,7 +15,7 @@ class Buzzer:
     """ 
     
     def beep(self, tone=500, duration=150):
-        print(f"Beeping the buzzer at {tone}hz for {duration} ms")
+        Log.i(f"Beeping the buzzer at {tone}hz for {duration} ms")
         self.play(tone)
         time.sleep(duration / 1000)
         self.stop()
@@ -46,7 +47,7 @@ class PassiveBuzzer(Buzzer):
     """
     
     def __init__(self, pin):
-        print("PassiveBuzzer: constructor")
+        Log.i("PassiveBuzzer: constructor")
         self._buz = PWM(Pin(pin))
         self._volume = 5
         self._playing = False
@@ -55,7 +56,7 @@ class PassiveBuzzer(Buzzer):
     def play(self, tone=500):
         """ play the supplied tone. """
         
-        print(f"PassiveBuzzer: playing tone {tone}")
+        Log.i(f"PassiveBuzzer: playing tone {tone}")
         self._buz.freq(tone)
         self._buz.duty_u16(self._volume * 100)
         self._playing = True
@@ -63,14 +64,14 @@ class PassiveBuzzer(Buzzer):
     def stop(self):
         """ Stop playing sound """
         
-        print("PassiveBuzzer: stopping tone")
+        Log.i("PassiveBuzzer: stopping tone")
         self._buz.duty_u16(0)
         self._playing = False
 
     def setVolume(self, volume=5):
         """ Change the volume of the sound currently playing and future plays """
         
-        print(f"PassiveBuzzer: changing volume to {volume}")
+        Log.i(f"PassiveBuzzer: changing volume to {volume}")
         self._volume = volume
         if (self._playing):
             self._buz.duty_u16(self._volume * 100)

@@ -6,6 +6,7 @@
 
 import time, neopixel, machine
 from Lights import *
+from Log import *
 
 class LightStrip(Light):
     """
@@ -31,7 +32,8 @@ class LightStrip(Light):
         self._numleds = numleds
         self._brightness = brightness
         self._running = False
-
+        
+        Log.i(f'Creating a neopixel on pin {pin} with {numleds} LEDs')
         # Create the StateMachine with the ws2812 program, outputting on pin
         self._np = neopixel.NeoPixel(machine.Pin(pin), numleds)
         #self._pix = neopixel.Neopixel(numleds, 1, pin, "GRB")
@@ -42,6 +44,7 @@ class LightStrip(Light):
 
         self._fill(WHITE)
         self._np.write()
+        Log.i('Neopixel ON')
     
     def off(self):
         """ Turn all LEDs OFF - all black """
@@ -49,6 +52,7 @@ class LightStrip(Light):
         time.sleep(0.1)
         self._clear()
         self._np.write()
+        Log.i('Neopixel OFF')
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
@@ -59,34 +63,38 @@ class LightStrip(Light):
         for i in range(numPixels,self._numleds):
             self._set_pixel(i, BLACK)
         self._np.write()
+        Log.i(f'Neopixel set color to {color}')
 
     def setPixel(self, pixelno, color):
         """ Turn a single pixel a specific color """
         self._set_pixel(pixelno, color)
         self._np.write()
+        Log.i(f'Neopixel set pixel {pixel} to colo {color}')
 
     def setBrightness(self, brightness=0.5):
         """ Change the brightness of the pixel 0-1 range """
+        
         self._brightness = brightness
-
+        Log.i(f'Neopixel set brightness to {brightness}')
+        
     def run(self, runtype=0):
         """ Run a single cycle of FILLS, CHASES or RAINBOW """
         self._running = True
         if runtype == LightStrip.FILLS:
-            print("fills")
+            Log.i("Neopixel running fills")
             for color in COLORS:
                 if not self._running:
                     break       
                 self.setColor(color)
                 time.sleep(0.2)
         elif runtype == LightStrip.CHASES:
-            print("chases")
+            Log.i("Neopixel running chases")
             for color in COLORS:
                 if not self._running:
                     break       
                 self.color_chase(color, 0.01)
         else:
-            print("rainbow")
+            Log.i("Neopixel running rainbow")
             self.rainbow_cycle(0)
         self._running = False
 

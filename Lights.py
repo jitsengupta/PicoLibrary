@@ -8,6 +8,7 @@
 
 import utime
 from machine import Pin, PWM
+from Log import *
 import _thread
 MAX = 65535
 
@@ -27,7 +28,7 @@ class Light:
         name is an optional name of the light
         """
             
-        print(f"Light: constructor")
+        Log.i(f"Light: constructor")
         self._name = name
         self._pin = pin
         self._blinking = False
@@ -36,25 +37,25 @@ class Light:
     def on(self):
         """ on: Turn the light on """
         
-        print(f"Light: turning on {self._name} light at pin {self._pin}")
+        Log.i(f"Light: turning on {self._name} light at pin {self._pin}")
         self._led.value(1)
 
     def off(self):
         """ off: turn the light off """
         
-        print(f"Light: turning off {self._name} light at pin {self._pin}")
+        Log.i(f"Light: turning off {self._name} light at pin {self._pin}")
         self._led.value(0)
 
     def flip(self):
         """ flip: turn off if it was on, on if it was off """
         
-        print(f"Light: Toggling {self._name} light at pin {self._pin}")
+        Log.i(f"Light: Toggling {self._name} light at pin {self._pin}")
         self._led.toggle()
 
     def blink(self, delay=0.5, times=1):
         """ blink: turn on for delay sec, off for delay sec [times] times"""
 
-        print(f"Light: Blink {self._name} {times} times for {delay} sec")
+        Log.i(f"Light: Blink {self._name} {times} times for {delay} sec")
         for x in range(0,times):
             self.on()
             utime.sleep(delay)
@@ -71,7 +72,7 @@ class DimLight(Light):
     def __init__(self, pin, name="Unnamed"):
         """ Dimmable light constructor """
 
-        print("Dimmable light constructor")
+        Log.i("Dimmable light constructor")
         super().__init__(pin, name)
         self._pwm = PWM(self._led)  # Create an instance of PWM object (pulse-width modulation)
         self._pwm.freq(100000)   # set frequency to 100 khz
@@ -83,7 +84,7 @@ class DimLight(Light):
         
         self._running = False
         self._onState = True
-        print(f"Dimlight: turn Light {self._name} on (full brightness)")
+        Log.i(f"Dimlight: turn Light {self._name} on (full brightness)")
         self.setBrightness(MAX)
 
     def off(self):
@@ -91,13 +92,13 @@ class DimLight(Light):
         
         self._running = False
         self._onState = False
-        print(f"Dimlight - turn Light {self._name} off (brightness 0)")
+        Log.i(f"Dimlight - turn Light {self._name} off (brightness 0)")
         self.setBrightness(0)
 
     def flip(self):
         """ flip: turn off if it was on, on if it was off """
         
-        print(f"Light: Toggling {self._name} light at pin {self._pin}")
+        Log.i(f"Light: Toggling {self._name} light at pin {self._pin}")
         if self._onState:
             self.off()
         else:
@@ -106,7 +107,7 @@ class DimLight(Light):
     def setBrightness(self, brightness):
         """ Set brightness to a specific level 0-255 """
 
-        print(f"Dimlight: setting Light {self._name} brightness to {brightness}")
+        Log.i(f"Dimlight: setting Light {self._name} brightness to {brightness}")
         if (brightness == MAX):
             self._pwm.duty_u16(MAX)
         else:
@@ -123,7 +124,7 @@ class DimLight(Light):
         # Here it is better to use ChangeDutyCycle
         """
         
-        print(f"Dimlight: do an up-down demo on Light {self._name}")
+        Log.i(f"Dimlight: do an up-down demo on Light {self._name}")
         self._running = True
         dc = 0
         for i in range (0, 25):

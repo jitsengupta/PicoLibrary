@@ -7,6 +7,7 @@
 
 from time import sleep, sleep_ms
 from machine import Pin
+from Log import *
 
 class CompositeLight:
     """
@@ -19,7 +20,7 @@ class CompositeLight:
     def __init__(self):
         """    # Constructor - just initialize the array of lights """
 
-        print("CompositeLight constructor")
+        Log.i("CompositeLight constructor")
         self._lights = []
         self._running = False
         
@@ -37,21 +38,21 @@ class CompositeLight:
         # get all items in order - but usually does
         """
         
-        print("CompositeLight: turning on all lights")
+        Log.i("CompositeLight: turning on all lights")
         for l in self._lights:
             l.on()
 
     def off(self):
         """     # Turn off all the components """
 
-        print("CompositeLight: turning off all lights")
+        Log.i("CompositeLight: turning off all lights")
         for l in self._lights:
             l.off()
             
     def singleOn(self, lightno):
         """     # Turn a single light on (and the others off) """
 
-        print(f"CompositieLight - turning only light #{lightno} on")
+        Log.i(f"CompositieLight - turning only light #{lightno} on")
         for i in range(0,len(self._lights)):
             if i == lightno:
                 self._lights[i].on()
@@ -81,22 +82,22 @@ class TrafficLight(CompositeLight):
         # in that order.
         """
         
-        print("TrafficLight constructor: add the lights in order")
+        Log.i("TrafficLight constructor: add the lights in order")
         super().__init__()
         self._lights.append(green)
         self._lights.append(yellow)
         self._lights.append(red)
     
     def go(self):
-        print("Trafficlight - go/green")
+        Log.i("Trafficlight - go/green")
         self.singleOn(0)
     
     def caution(self):
-        print("Trafficlight - caution/yellow")
+        Log.i("Trafficlight - caution/yellow")
         self.singleOn(1)
 
     def stop(self):
-        print("Trafficlight - stop/red")
+        Log.i("Trafficlight - stop/red")
         self.singleOn(2)
 
     def run(self):
@@ -106,7 +107,7 @@ class TrafficLight(CompositeLight):
         """
         
         super().run()
-        print("TrafficLight: Run a simple Green-yellow-red sequence")
+        Log.i("TrafficLight: Run a simple Green-yellow-red sequence")
         if (self._running):
             self.go()
         if (self._running):
@@ -131,7 +132,7 @@ class Pixel(CompositeLight):
     def __init__(self, R, G, B, commoncathode = True):
         """     # Pixel constructor """
 
-        print("Pixel: Constructor - add R G B in that order")
+        Log.i("Pixel: Constructor - add R G B in that order")
         super().__init__()
         self._lights.append(R)
         self._lights.append(G)
@@ -140,7 +141,7 @@ class Pixel(CompositeLight):
         self._running = False
         
     def on(self):
-        print("Pixel: turning all components on")
+        Log.i("Pixel: turning all components on")
         self._running = False
         if self._commoncathode:
             super().on()
@@ -148,7 +149,7 @@ class Pixel(CompositeLight):
             super().off()
             
     def off(self):
-        print("Pixel: turning all components off")
+        Log.i("Pixel: turning all components off")
         self._running = False
         if self._commoncathode:
             super().off()
@@ -161,7 +162,7 @@ class Pixel(CompositeLight):
         # Brightness is set as percentage in this app
         """
         
-        print(f"Pixel: setColor: R:{RR}, G:{GG}, B:{BB}")
+        Log.i(f"Pixel: setColor: R:{RR}, G:{GG}, B:{BB}")
         self._lights[0].setBrightness(RR)
         self._lights[1].setBrightness(GG)
         self._lights[2].setBrightness(BB)
@@ -171,7 +172,7 @@ class Pixel(CompositeLight):
         self._running = True
 
         colors = [[255,0,0], [255,165,0], [255,255,0], [0,128,0],[0,0,255],[75,0,130],[238,130,238]]
-        print("Pixel - run - rainbow demo")
+        Log.i("Pixel - run - rainbow demo")
         for c in colors:
             if not self._running:
                 break

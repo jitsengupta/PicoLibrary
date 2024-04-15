@@ -9,6 +9,7 @@ import time
 import network
 import urequests as requests
 import ubinascii
+from Log import *
 
 class Net:
     
@@ -37,6 +38,7 @@ class Net:
             self._wlan.connect(self._ssid, security=0)
 
         # Wait for connection to establish
+        Log.i(f'Net: connecting to {self._ssid}')
         print('waiting for connection...', end="")
         while max_wait > 0:
             if self._wlan.status() < 0 or self._wlan.status() >= 3:
@@ -49,7 +51,8 @@ class Net:
         if self._wlan.status() != 3:
             raise RuntimeError('Network Connection has failed!')
         else:
-            print('connected!')
+            print("Connected!")
+            Log.i('Net: connected!')
     
     def disconnect(self):
         """ Disconnect from wifi network """
@@ -121,6 +124,6 @@ class Net:
             data.close()
             return jsondata
         except:
-            print("could not connect (status =" + str(self._wlan.status()) + ")")
+            Log.e("could not connect (status =" + str(self._wlan.status()) + ")")
             return None
 

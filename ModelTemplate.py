@@ -16,6 +16,7 @@ import random
 from Model import *
 from Button import *
 from Counters import *
+from Log import *
 
 """
 This is the template Model Runner - you should rename this class to something
@@ -104,12 +105,12 @@ class MyControllerTemplate:
         # Again if statements to do whatever entry/actions you need
         if state == 0:
             # entry actions for state 0
-            print('State 0 entered')
+            Log.d('State 0 entered')
             pass
         
         elif state == 1:
             # entry actions for state 1
-            print('State 1 entered')
+            Log.d('State 1 entered')
             self._timer.start(5)
         
             

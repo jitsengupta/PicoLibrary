@@ -7,6 +7,7 @@
 
 import time
 from machine import Timer
+from Log import *
 
 class Counter:
     """
@@ -15,18 +16,18 @@ class Counter:
     """
     
     def __init__(self):
-        print("Counter: constructor")
+        Log.i("Counter: constructor")
         self._count = 0
 
     def reset(self):
-        print("Counter - reset")
+        Log.i("Counter - reset")
         self._count = 0
 
 class UpDownCounter(Counter):
     """ A basic updown counter - can go up or down, can set up a min and max """
     
     def __init__(self, min = None, max = None):
-        print("Updowncounter constructor")
+        Log.i("Updowncounter constructor")
         super().__init__()
         self._min = min
         self._max = max
@@ -37,7 +38,7 @@ class UpDownCounter(Counter):
         no change will be made.
         """
                 
-        print("Updowncounter incrementing")
+        Log.i("Updowncounter incrementing")
         if (self._max is None or self._count + step <= self._max):
             self._count = self._count + step
 
@@ -47,7 +48,7 @@ class UpDownCounter(Counter):
         no change will be made
         """
         
-        print("Updowncounter decrementing")
+        Log.i("Updowncounter decrementing")
         if (self._min is None or self._count - step >= self._min):
             self._count = self._count - step
 
@@ -65,7 +66,7 @@ class TimeKeeper(Counter):
     """
     
     def __init__(self):
-        print("Timekeeper: constructor")
+        Log.i("Timekeeper: constructor")
         super().__init__()
         self._starttime = 0
         self._running = False
@@ -73,7 +74,7 @@ class TimeKeeper(Counter):
     def start(self):
         """ Start the timer. Note that if previously stopped, this will add to previous time """
         
-        print("Timekeeper: start")
+        Log.i("Timekeeper: start")
         """ If timer was already running, the start will get reset to the new time """
 
         self._starttime = time.ticks_ms()
@@ -82,7 +83,7 @@ class TimeKeeper(Counter):
     def stop(self):
         """ Stop the timer. Count will save the # of ms elapsed """
         
-        print("Timekeeper: stop")
+        Log.i("Timekeeper: stop")
         """ If it was already stopped, nothing to be done """
         if self._running:
             self._running = False
@@ -188,7 +189,7 @@ class SoftwareTimer(BaseTimer):
     def start(self, seconds):
         """ Start the timer with a set number of seconds """
         
-        print(f"Starting timer with {seconds} seconds")
+        Log.i(f"Starting timer with {seconds} seconds")
         self._count = seconds
         self._starttime = time.ticks_ms()
         self._started = True
@@ -198,7 +199,7 @@ class SoftwareTimer(BaseTimer):
         
         if self._started:
             self._starttime = 0
-            print(f"{self._count} sec timer cancelled")
+            Log.i(f"{self._count} sec timer cancelled")
         super().cancel()
 
     def check(self):
@@ -207,7 +208,7 @@ class SoftwareTimer(BaseTimer):
         """
         
         if self._started and time.ticks_diff(time.ticks_ms(), self._starttime) > self._count * 1000:
-            print(f"{self._count} sec timer is up")
+            Log.i(f"{self._count} sec timer is up")
             self._started = False
             self._count = 0
             self._handler.timeout()

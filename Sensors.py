@@ -7,6 +7,7 @@
 
 from machine import Pin, ADC
 import utime
+from Log import *
 
 class Sensor:
     """
@@ -30,7 +31,7 @@ class Sensor:
         self._lowactive = lowactive
         
     def tripped(self)->bool:
-        print(f"tripped not implemented for {type(self).__name__}")
+        Log.e(f"tripped not implemented for {type(self).__name__}")
         return False
 
 class DigitalSensor(Sensor):
@@ -48,7 +49,7 @@ class DigitalSensor(Sensor):
     def tripped(self)->bool:
         v = self._pinio.value()
         if (self._lowactive and v == 0) or (not self._lowactive and v == 1):
-            print("DigitalLightSensor: sensor tripped")
+            Log.i("DigitalLightSensor: sensor tripped")
             return True
         else:
             return False
@@ -73,7 +74,7 @@ class AnalogSensor(Sensor):
         
         v = self.rawValue()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            print("AnalogLightSensor: sensor tripped")
+            Log.i("AnalogLightSensor: sensor tripped")
             return True
         else:
             return False
@@ -126,7 +127,7 @@ class UltrasonicSensor(Sensor):
         
         v = self.getDistance()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            print("UltrasonicSensor: sensor tripped")
+            Log.i("UltrasonicSensor: sensor tripped")
             return True
         else:
             return False

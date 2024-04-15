@@ -4,6 +4,7 @@
 # Author: Arijit Sengupta
 """
 import time
+from Log import *
 
 NO_EVENT = 0
 BTN1_PRESS = 1
@@ -123,7 +124,7 @@ class Model:
         
         if (newState < self._numstates):
             if self._debug:
-                print(f"Going from State {self._curState} to State {newState}")
+                Log.d(f"Going from State {self._curState} to State {newState}")
             self._handler.stateLeft(self._curState, event)
             self._curState = newState
             self._handler.stateEntered(self._curState, event)
@@ -145,10 +146,10 @@ class Model:
             if newstate is None:
                 if self._debug:
                     if event != NO_EVENT:
-                        print(f"Ignoring event {EVENTNAMES[event]}")
+                        Log.d(f"Ignoring event {EVENTNAMES[event]}")
             else:
                 if self._debug:
-                    print(f"Processing event {EVENTNAMES[event]}")
+                    Log.d(f"Processing event {EVENTNAMES[event]}")
                 self.gotoState(self._transitions[self._curState][event], event)
 
     def run(self, delay=0.1):        
