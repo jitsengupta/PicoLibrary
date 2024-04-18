@@ -7,6 +7,7 @@
 
 from machine import Pin, ADC
 import utime
+import math
 from Log import *
 
 class Sensor:
@@ -53,6 +54,21 @@ class DigitalSensor(Sensor):
             return True
         else:
             return False
+        
+class TiltSensor(DigitalSensor):
+    """
+    A tilt sensor looks like a cap but has just a metal ball on two contacts
+    when you tilt, the ball rolls off and the contact opens. That way its very
+    much like a button which is always pressed.
+    """
+    
+    def __init__(self, pin):
+        # Init - do not call the super init - just create the Pin.
+
+        self._pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        
+    def tripped(self):
+        return self._pin.value() == 1
 
 class AnalogSensor(Sensor):
     """
@@ -74,7 +90,7 @@ class AnalogSensor(Sensor):
         
         v = self.rawValue()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            Log.i("AnalogLightSensor: sensor tripped")
+            Log.i("AnalogSensor: sensor tripped")
             return True
         else:
             return False
@@ -82,7 +98,35 @@ class AnalogSensor(Sensor):
     def rawValue(self):
         return self._pinio.read_u16()
 
-
+class TempSensor(AnalogSensor):
+    """
+    Temperature sensor as a subclass of Analog Sensor - Temp sensor is a bit more
+    defined since it technically returns a temperature. Note that thermistors are
+    not totally accurate, but the teperature fluctuations - increases and decreases
+    are what matters.
+    """
+    
+    def __init__(self, pin, lowactive=False, threshold=60):
+        """
+        Create a new temp sensor - similar to regular analog sensor
+        but now tripped will return true when temp is lower than threshold (lowactive=True)
+        and higher than threshold (lowactive=False)
+        """
+        
+        super().__init__(pin, lowactive, threshold)
+        
+    def rawValue(self):
+        """
+        Reture the temperature (approx) in fahrenheit
+        """
+        
+        adcvalue = super().rawValue()
+        voltage = adcvalue / 65535.0 * 5
+        Rt = 10 * voltage / (5 -voltage)
+        tempK = (1 / (1 / (273.15+25) + (math.log(Rt/10)) / 3950))
+        tempF = int((tempK - 273.15) * 1.8) + 32
+        return tempF
+        
 class UltrasonicSensor(Sensor):
     """
     A simple implementation of an ultrasonic sensor with digital IO
@@ -131,4 +175,3 @@ class UltrasonicSensor(Sensor):
             return True
         else:
             return False
-
