@@ -6,7 +6,7 @@
 """
 
 import time
-from machine import Timer
+from machine import Timer, RTC
 from Log import *
 
 class Counter:
@@ -158,7 +158,7 @@ class HardwareTimer(BaseTimer):
     def start(self, seconds):
         """ Start the timer with the number of seconds to use. """
         
-        super().__start(seconds)
+        super().start(seconds)
         self._timer.init(period = int(seconds*1000), mode=Timer.ONE_SHOT, callback = self.timeout)
 
     def cancel(self):
@@ -212,3 +212,21 @@ class SoftwareTimer(BaseTimer):
             self._started = False
             self._count = 0
             self._handler.timeout()
+
+class Time:
+    @classmethod
+    def getTime(cls):
+        """
+        Return the currnet time using the datetime 8-tuple:
+        (year (4 dig), month (1-12), date(1-31), hour (0-23), min(0,59), sec(0-59), wkday(0-6), yday(1-366))
+        """
+        return time.localtime()
+
+    @classmethod
+    def setTime(cls, tm):
+        """
+        Send a semi-valid time tuple - wkday and yday are ignored
+        The rest have to be valid (be careful about no. of days in a month
+        """
+        RTC().datetime((tm[0], tm[1], tm[2], 0, tm[3], tm[4], tm[5], 0))
+    
