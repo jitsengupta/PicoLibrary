@@ -1,5 +1,5 @@
 """
-# Model.py
+# StateModel.py
 # A State model implementation
 # Author: Arijit Sengupta
 """
@@ -22,7 +22,7 @@ EVENTNAMES = ["NO_EVENT", "BTN1_PRESS", "BTN1_RELEASE", "BTN2_PRESS","BTN2_RELEA
                 "BTN3_PRESS", "BTN3_RELEASE", "BTN4_PRESS","BTN4_RELEASE",
                 "TIMEOUT"]
 
-class Model:
+class StateModel:
     """
     A really simple implementation of a generic state model
     Keeps track of a number of states by sending the total number
@@ -61,7 +61,7 @@ class Model:
     
     def __init__(self, numstates, handler, debug=False):
         """
-        The model constructor - needs 2 things minimum:
+        The statemodel constructor - needs 2 things minimum:
         Parameters
         ----------
         numstates - the number of states in the State model (includes the start and end states)
