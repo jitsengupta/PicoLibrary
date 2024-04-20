@@ -28,6 +28,7 @@ class Button:
             self._pin = Pin(pin, Pin.IN, Pin.PULL_DOWN)
         self._debounce_time = 0
         self._lowActive = lowActive
+        self._lastStatus = None
         self._buttonhandler = buttonhandler
         self._pin.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
 
@@ -45,14 +46,16 @@ class Button:
         """ The private interrupt handler - will call appropriate handlers """
         
         t = time.ticks_ms()
-        if (t-self._debounce_time) > 100:
+        v = self._pin.value()
+        if ((self._lastStatus == None or self._lastStatus != v) and t-self._debounce_time) > 50:
             self._debounce_time=t
+            self._lastStatus = v
             if self._buttonhandler is not None:
                 if self.isPressed():
                     self._buttonhandler.buttonPressed(self._name)
                 else:
                     self._buttonhandler.buttonReleased(self._name)
-        self._debounce_time=t
+        #self._debounce_time=t
 
 class Joystick(Button):
     """
