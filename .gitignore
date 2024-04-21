@@ -130,3 +130,4 @@ dmypy.json
 Game.py
 main.py
 MemoryGameController.py
+PianoController.py

@@ -69,7 +69,7 @@ class LightStrip(Light):
         """ Turn a single pixel a specific color """
         self._set_pixel(pixelno, color)
         self._np.write()
-        Log.i(f'Neopixel set pixel {pixel} to colo {color}')
+        Log.i(f'Neopixel set pixel {pixelno} to color {color}')
 
     def setBrightness(self, brightness=0.5):
         """ Change the brightness of the pixel 0-1 range """
