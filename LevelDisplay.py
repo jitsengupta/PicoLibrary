@@ -78,7 +78,7 @@ class LCDLevel(LevelDisplay):
             arr = [0x00]*8
             for z in range(0,p+1):
                 arr[7-z] = 0xff
-            self._display._lcd.custom_char(p, arr)
+            self._display.addShape(p, arr)
 
     def showLevel(self, levelpct, row=0, col=0):
         level = levelpct

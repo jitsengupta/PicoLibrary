@@ -65,12 +65,26 @@ class LightStrip(Light):
         self._np.write()
         Log.i(f'Neopixel set color to {color}')
 
-    def setPixel(self, pixelno, color):
-        """ Turn a single pixel a specific color """
+    def setPixel(self, pixelno, color, show=True):
+        """
+        Turn a single pixel a specific color
+        By default the new color is immediately shown.
+        To make multiple changes, you can speed up by setting
+        show to False, then calling the show method
+        """
         self._set_pixel(pixelno, color)
-        self._np.write()
+        if show:
+            self._np.write()
         Log.i(f'Neopixel set pixel {pixelno} to color {color}')
 
+    def show(self):
+        """
+        Shows what is in the color buffer. Useful if previous
+        setPixel was called without show On
+        """
+        
+        self._np.write()
+        
     def setBrightness(self, brightness=0.5):
         """ Change the brightness of the pixel 0-1 range """
         

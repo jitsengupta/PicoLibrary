@@ -29,6 +29,9 @@ class Display:
 
     def reset(self):
         Log.e(f"reset NOT IMPLEMENTED in {type(self).__name__}")
+        
+    def clear(self):
+        self.reset()
 
     def showNumber(self, number):
         Log.e(f"showNumber NOT IMPLEMENTED! in {type(self).__name__}")
@@ -204,6 +207,20 @@ class LCDDisplay(Display):
         Log.i(f"LCDDisplay - showing text {text} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(text)
+
+    def addShape(self, position, shapearray):
+        """
+        Add a custom character at a position.
+        position must be between 0 and 7
+        shapearray needs to be a bytearray that can
+        be created by going to
+        https://maxpromer.github.io/LCD-Character-Creator/
+        """
+        if position < 0 or position > 7:
+            raise ValueError('Position must be between 0 and 7.')
+        if len(shapearray) != 8:
+            raise ValueError('Make sure array is exactly 8 bytes')
+        self._lcd.custom_char(position, shapearray)
 
     def scroll(self, text, row=0, speed=100, skip=2):
         """
