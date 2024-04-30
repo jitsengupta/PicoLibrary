@@ -34,11 +34,8 @@ class LightStrip(Light):
         self._brightness = brightness
         self._running = False
         
-        Log.i(f'Creating a neopixel on pin {pin} with {numleds} LEDs')
-        # Create the StateMachine with the ws2812 program, outputting on pin
+        Log.i(f'Creating a neopixel {name} on pin {pin} with {numleds} LEDs')
         self._np = neopixel.NeoPixel(machine.Pin(pin), numleds)
-        #self._pix = neopixel.Neopixel(numleds, 1, pin, "GRB")
-        #self._pix.brightness(int(brightness * 255))
 
     def on(self):
         """ Turn all LEDs ON - all white """
@@ -54,6 +51,13 @@ class LightStrip(Light):
         self._clear()
         self._np.write()
         Log.i(f'{self._name} OFF')
+
+    def flip(self):
+        """ Flip the clors on all the LEDs """
+        for x in range(0, self._numleds):
+            self._np[x] = (255-self._np[x][0], 255-self._np[x][1], 255-self._np[x][2])
+        self.show()
+        Log.i(f'{self._name} flipped')
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
@@ -173,3 +177,4 @@ PURPLE = (180, 0, 255)
 WHITE = (255, 255, 255)
 ORANGE = (255, 164, 0)
 COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE, ORANGE)
+
