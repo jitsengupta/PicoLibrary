@@ -20,14 +20,15 @@ class LightStrip(Light):
     CHASES = 1
     RAINBOW = 2
 
-    def __init__(self, pin=22, numleds=16, brightness=0.5):
+    def __init__(self, name='Neopixel', pin=2, numleds=16, brightness=0.5):
         """
         Constructor for neopixel will create its own internal statemachine
         Note that if any other state machine is running, this will break the existing
         statemachine. This refers to the Pico PIO statemachine, not any software state
         machines.
         """
-
+        
+        self._name = name
         self._pin = pin
         self._numleds = numleds
         self._brightness = brightness
@@ -44,7 +45,7 @@ class LightStrip(Light):
 
         self._fill(WHITE)
         self._np.write()
-        Log.i('Neopixel ON')
+        Log.i(f'{self._name} ON')
     
     def off(self):
         """ Turn all LEDs OFF - all black """
@@ -52,7 +53,7 @@ class LightStrip(Light):
         time.sleep(0.1)
         self._clear()
         self._np.write()
-        Log.i('Neopixel OFF')
+        Log.i(f'{self._name} OFF')
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
@@ -63,7 +64,7 @@ class LightStrip(Light):
         for i in range(numPixels,self._numleds):
             self._set_pixel(i, BLACK)
         self._np.write()
-        Log.i(f'Neopixel set color to {color}')
+        Log.i(f'{self._name} set color to {color}')
 
     def setPixel(self, pixelno, color, show=True):
         """
@@ -75,7 +76,7 @@ class LightStrip(Light):
         self._set_pixel(pixelno, color)
         if show:
             self._np.write()
-        Log.i(f'Neopixel set pixel {pixelno} to color {color}')
+        Log.i(f'{self._name} set pixel {pixelno} to color {color}')
 
     def show(self):
         """
@@ -89,26 +90,26 @@ class LightStrip(Light):
         """ Change the brightness of the pixel 0-1 range """
         
         self._brightness = brightness
-        Log.i(f'Neopixel set brightness to {brightness}')
+        Log.i(f'{self._name} set brightness to {brightness}')
         
     def run(self, runtype=0):
         """ Run a single cycle of FILLS, CHASES or RAINBOW """
         self._running = True
         if runtype == LightStrip.FILLS:
-            Log.i("Neopixel running fills")
+            Log.i(f'{self._name} running fills')
             for color in COLORS:
                 if not self._running:
                     break       
                 self.setColor(color)
                 time.sleep(0.2)
         elif runtype == LightStrip.CHASES:
-            Log.i("Neopixel running chases")
+            Log.i(f'{self._name} running chases')
             for color in COLORS:
                 if not self._running:
                     break       
                 self.color_chase(color, 0.01)
         else:
-            Log.i("Neopixel running rainbow")
+            Log.i(f'{self._name} running rainbow')
             self.rainbow_cycle(0)
         self._running = False
 
@@ -172,4 +173,3 @@ PURPLE = (180, 0, 255)
 WHITE = (255, 255, 255)
 ORANGE = (255, 164, 0)
 COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE, ORANGE)
-
