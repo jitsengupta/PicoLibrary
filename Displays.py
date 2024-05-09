@@ -169,6 +169,7 @@ class LCDDisplay(Display):
                 self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
             except:
                 raise ValueError('Could not connect to display - check wiring.')
+        self._working = False
 
     def reset(self):
         """ 
@@ -177,15 +178,21 @@ class LCDDisplay(Display):
         
         Log.i("LCDDisplay: reset")
         self._lcd.clear()
+        self._working = False
 
     def showNumber(self, number, row=0, col=0):
         """
         show a single number
         """
         
+        if self._working:
+            Log.e("LCDDisplay - Display busy")
+            return
+        self._working = True
         Log.i(f"LCDDisplay - showing number {number} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(f"{number}")
+        self._working = False
 
     def showNumbers(self, num1, num2, colon=True, row=0, col=0):
         """
@@ -193,10 +200,15 @@ class LCDDisplay(Display):
         by default, the colon is shown
         """
         
+        if self._working:
+            Log.e("LCDDisplay - Display busy")
+            return
+        self._working = True
         Log.i(f"LCDDisplay - showing numbers {num1}, {num2} at {row},{col}")
         self._lcd.move_to(col, row)
         colsym = ":" if colon else " "
         self._lcd.putstr(f"{num1}{colsym}{num2}")
+        self._working = False
 
     def showText(self, text, row=0, col=0):
         """
@@ -204,9 +216,14 @@ class LCDDisplay(Display):
         for anything bigger than 4 characters.
         """
         
+        if self._working:
+            Log.e("LCDDisplay - Display busy")
+            return
+        self._working = True
         Log.i(f"LCDDisplay - showing text {text} at {row},{col}")
         self._lcd.move_to(col, row)
         self._lcd.putstr(text)
+        self._working = False
 
     def addShape(self, position, shapearray):
         """
@@ -236,6 +253,10 @@ class LCDDisplay(Display):
         better with GPIO-driven displays
         """
 
+        if self._working:
+            Log.e("LCDDisplay - Display busy")
+            return
+        self._working = True
         Log.i(f"LCDDisplay - scrolling text {text} in row {row}")
         for p in range(0,len(text)+skip, skip):
             curst = (text+' '*(16+skip))[p:p+16]
@@ -243,6 +264,7 @@ class LCDDisplay(Display):
                 self._lcd.move_to(c-1, row)
                 self._lcd.putchar(curst[c-1])
             time.sleep(speed/1000)
+        self._working = False
 
 class DotMatrixDisplay(Display):
     """
