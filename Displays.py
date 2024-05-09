@@ -16,9 +16,6 @@ from rp2 import PIO
 import tm1637
 from gpio_lcd import *
 from pico_i2c_lcd import I2cLcd
-from ssd1306 import SSD1306_I2C
-import lcd128_32_fonts
-from lcd128_32 import lcd128_32
 import max7219
 
 class Display:
@@ -82,42 +79,6 @@ class SevenSegmentDisplay(Display):
         """
         
         self._tm.scroll(text, speed)
-
-class SevenSegmentDisplayRaw(Display):
-    """
-    A Raw 7 segment display that uses RPi PIO along with internal StateMachine
-    to poll 4 digits into the display. All digits are shown always so there will be
-    leading zeros for numbers under 4 digits
-    """
-    
-    def __init__(self, pinstart=2, digstart=10):
-        self._digits = [
-            0b11000000, # 0
-            0b11111001, # 1
-            0b10100100, # 2 
-            0b10110000, # 3
-            0b10011001, # 4
-            0b10010010, # 5
-            0b10000010, # 6
-            0b11111000, # 7
-            0b10000000, # 8
-            0b10011000, # 9
-            ]
-        self._sm = rp2.StateMachine(0, sevseg, freq=2000, out_base=Pin(pinstart), sideset_base=Pin(digstart))
-        self._sm.active(1)
-  
-    def _segmentize(self, num):
-        return (
-            self._digits[num % 10] | self._digits[num // 10 % 10] << 8
-            | self._digits[num // 100 % 10] << 16 
-            | self._digits[num // 1000 % 10] << 24 
-        )
-
-    def showNumber(self, n):
-        self._sm.put(self._segmentize(n))
-        
-    def reset(self):
-        self._sm.put(0xFFFFFFFF)
 
 class LCDDisplay(Display):
     """
@@ -307,80 +268,6 @@ class DotMatrixDisplay(Display):
             #Set the Scrolling speed. Here it is 50mS.
             time.sleep(speed/1000)
 
-class LCDHiResDisplay(Display):
-    """
-    LCDHiResDisplay - implements an LCD display which gives access to individual pixels
-    
-    Only supports I2C connection for now. Pass in sda, scl, i2cid, width and height
-    
-    Usage:
-    Connect to I2C0 on sda to pin 0 and scl to pin 1:
-    
-    LCDHiResDisplay(sda=0, scl=1, i2cid=0, width=128, height=32)
-    
-    Connect to I2C0 on sda to pin 20, scl to pin 21:
-    LCDHiResDisplay(sda=20, scl=21, i2cid=0, width=128, height=32) # default values
-    
-    Note that graphics outputs are not supported yet in this library.    
-    """
-    
-    def __init__(self, sda=20, scl=21, i2cid=0, width=128, height=32):
-        Log.i("LCDHiResDisplay (I2C) Constructor")
-        i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
-        I2C_ADDR = i2c.scan()[0]
-        try:
-            I2C_ADDR = i2c.scan()[0]
-            self._lcd = lcd128_32(sda, scl, i2cid, I2C_ADDR)
-            self.reset()
-        except:
-            raise ValueError('Could not connect to display - check wiring.')
-
-    def reset(self):
-        self._lcd.Clear()
-        
-    def showNumber(self, number, row=0, col=0):
-        self._lcd.Cursor(row,col)
-        self._lcd.Display(str(number))
-
-    def showText(self, text, row=0, col=0):
-        self._lcd.Cursor(row,col)
-        self._lcd.Display(text)
-
-    
-class OLEDDisplay(Display):
-    """
-    OLEDDisplay class - implements an OLED display
-    
-    Only supports I2C connection for now. Pass in sda, scl, i2cid, width and height
-    
-    Usage:
-    Connect to I2C0 on sda to pin 0 and scl to pin 1:
-    
-    OLEDDisplay(sda=0, scl=1, i2cid=0, width=128, height=64)
-    
-    Connect to I2C1 on sda to pin 26, scl to pin 27:
-    OLEDDisplay(sda=26, scl=27, i2cid=1, width=128, height=64) # default values
-    
-    Note that graphics outputs are not supported yet in this library.
-    """
-
-    def __init__(self, sda=26, scl=27, i2cid=1, width=128, height=64):
-        self._i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
-        self._oled = SSD1306_I2C(width, height, self._i2c)
-        self.reset()
-
-    def reset(self):
-        self._oled.fill(0)
-        self._oled.show()
-        
-    def showNumber(self, number, row=0, col=0):
-        self._oled.text(str(number), row, col, 1)
-        self._oled.show()
-
-    def showText(self, text, row=0, col=0):
-        self._oled.text(text, row, col, 1)
-        self._oled.show()
-
 class MorseDisplay(Display):
     """
     This is a fun class - implement a Morse code display
@@ -448,6 +335,42 @@ class MorseDisplay(Display):
         if self._light is not None:
             self._light.off()
         time.sleep_ms(100)
+
+class SevenSegmentDisplayRaw(Display):
+    """
+    A Raw 7 segment display that uses RPi PIO along with internal StateMachine
+    to poll 4 digits into the display. All digits are shown always so there will be
+    leading zeros for numbers under 4 digits
+    """
+    
+    def __init__(self, pinstart=2, digstart=10):
+        self._digits = [
+            0b11000000, # 0
+            0b11111001, # 1
+            0b10100100, # 2 
+            0b10110000, # 3
+            0b10011001, # 4
+            0b10010010, # 5
+            0b10000010, # 6
+            0b11111000, # 7
+            0b10000000, # 8
+            0b10011000, # 9
+            ]
+        self._sm = rp2.StateMachine(0, sevseg, freq=2000, out_base=Pin(pinstart), sideset_base=Pin(digstart))
+        self._sm.active(1)
+  
+    def _segmentize(self, num):
+        return (
+            self._digits[num % 10] | self._digits[num // 10 % 10] << 8
+            | self._digits[num // 100 % 10] << 16 
+            | self._digits[num // 1000 % 10] << 24 
+        )
+
+    def showNumber(self, n):
+        self._sm.put(self._segmentize(n))
+        
+    def reset(self):
+        self._sm.put(0xFFFFFFFF)
 
 # Internals used by the PIO state machine
 # THIS IS REQUIRED FOR THE SEVEN SEG RAW class
