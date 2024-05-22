@@ -13,7 +13,7 @@ those in your run method for transitions based on sensor events.
 # Import whatever Library classes you need - Model is obviously needed
 import time
 import random
-from Model import *
+from StateModel import *
 from Button import *
 from Counters import *
 from Log import *
@@ -44,7 +44,7 @@ class MyControllerTemplate:
         # Instantiate a Model. Needs to have the number of states, self as the handler
         # You can also say debug=True to see some of the transitions on the screen
         # Here is a sample for a model with 4 states
-        self._model = Model(2, self, debug=True)
+        self._model = StateModel(2, self, debug=True)
         
         # Up to 4 buttons and a timer can be added to the model for use in transitions
         # Buttons must be added in the sequence you want them used. The first button
@@ -82,7 +82,6 @@ class MyControllerTemplate:
     stateDo - the method that handles the do/actions for each state
     """
     def stateDo(self, state):
-            
         # Now if you want to do different things for each state you can do it:
         if state == 0:
             # State 0 do/actions
@@ -103,14 +102,13 @@ class MyControllerTemplate:
     """
     def stateEntered(self, state, event):
         # Again if statements to do whatever entry/actions you need
+        Log.d(f'State {state} entered')
         if state == 0:
             # entry actions for state 0
-            Log.d('State 0 entered')
             pass
         
         elif state == 1:
             # entry actions for state 1
-            Log.d('State 1 entered')
             self._timer.start(5)
         
             
@@ -123,8 +121,11 @@ class MyControllerTemplate:
     """
 
     def stateLeft(self, state, event):
-        pass
-
+        Log.d(f'State {state} exited')
+        if state == 0:
+            # exit actions for state 0
+            pass
+        # etc.
     
 
 # Test your model. Note that this only runs the template class above

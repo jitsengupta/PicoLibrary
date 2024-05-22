@@ -6,6 +6,8 @@
 import time
 from Log import *
 
+MAX_BUTTONS = 5
+
 NO_EVENT = 0
 BTN1_PRESS = 1
 BTN1_RELEASE = 2
@@ -16,11 +18,14 @@ BTN3_RELEASE = 6
 BTN4_PRESS = 7
 BTN4_RELEASE = 8
 TIMEOUT = 9
+# Adding support for a fifth button
+BTN5_PRESS = 10
+BTN5_RELEASE = 11
 
-NUMEVENTS = 10
+NUMEVENTS = 12
 EVENTNAMES = ["NO_EVENT", "BTN1_PRESS", "BTN1_RELEASE", "BTN2_PRESS","BTN2_RELEASE",
                 "BTN3_PRESS", "BTN3_RELEASE", "BTN4_PRESS","BTN4_RELEASE",
-                "TIMEOUT"]
+                "TIMEOUT", "BTN5_PRESS", "BTN5_RELEASE"]
 
 class StateModel:
     """
@@ -41,7 +46,7 @@ class StateModel:
 
     Currently there are 10 hardcoded events that are supported.
     
-    * BTN1_PRESS/RELEASE through BTN4_PRESS/RELEASE are for button presses
+    * BTN1_PRESS/RELEASE through BTN5_PRESS/RELEASE are for button presses
     and releases - in the order they are created.
     * TIMEOUT is the event for a software or hardware timer. Only one
     timer can be active at a time
@@ -90,7 +95,7 @@ class StateModel:
         """
         Once the model is created, you must add all the transitions
         for known events. The model can handle events for button presses
-        up to 4 buttons are supported. And it can also handle a timeout
+        up to 5 buttons are supported. And it can also handle a timeout
         event created by a software or hardware timer. See documentation
         of the Counters classes to see how to use them.
         """
@@ -172,11 +177,11 @@ class StateModel:
                 time.sleep(delay)
 
     def addButton(self, btn):
-        if len(self._buttons) < 4:
+        if len(self._buttons) < MAX_BUTTONS:
             btn.setHandler(self)
             self._buttons.append(btn)
         else:
-            raise ValueError('Currently we only support up to 4 buttons')
+            raise ValueError(f'Currently we only support up to {MAX_BUTTONS} buttons')
 
     def buttonPressed(self, name):
         """ 
@@ -194,6 +199,8 @@ class StateModel:
                     self.processEvent(BTN3_PRESS)
                 elif i == 3:
                     self.processEvent(BTN4_PRESS)
+                elif i == 4:
+                    self.processEvent(BTN5_PRESS)
 
     """
     Same thing with Button release, if you want to handle release events
@@ -210,6 +217,8 @@ class StateModel:
                     self.processEvent(BTN3_RELEASE)
                 elif i == 3:
                     self.processEvent(BTN4_RELEASE)
+                elif i == 4:
+                    self.processEvent(BTN5_RELEASE)
 
     def addTimer(self, timer):
         self._timer = timer
