@@ -19,5 +19,6 @@ Currently supported hardware - (more to be added)
 * Displays - 7 segment displays (both sda/scl controlled as well as bit-banged using PIO)
 * LED matrix displays - (MAX7219 driver)
 * Sensors - both ditigal (0/1) as well as Analog (ADC 16 bit) sensors
+* Specialized Sensors - Ultrasonic Sensor, Temp sensor, DHT11/DHT12 temp/hum sensor and Tilt sensor
 
 Contact Dr. Sengupta if you need support for any other hardware
