@@ -20,7 +20,7 @@ class LightStrip(Light):
     CHASES = 1
     RAINBOW = 2
 
-    def __init__(self, name='Neopixel', pin=2, numleds=16, brightness=0.5):
+    def __init__(self, pin=2, name='Neopixel', numleds=16, brightness=0.5):
         """
         Constructor for neopixel will create its own internal statemachine
         Note that if any other state machine is running, this will break the existing

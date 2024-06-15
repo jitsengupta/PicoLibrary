@@ -13,9 +13,14 @@ class Buzzer:
     ranging from fequencies 10 through 10000
     default volume is half volume - set it between 0 and 10
     """ 
-    
+    def __init__(self, pin, name='Buzzer'):
+        """
+        Base class init - we don't do anything with the pin here
+        """
+        self._name = name
+        
     def beep(self, tone=500, duration=150):
-        Log.i(f"Beeping the buzzer at {tone}hz for {duration} ms")
+        Log.i(f"Beeping {self._name} at {tone}hz for {duration} ms")
         self.play(tone)
         time.sleep(duration / 1000)
         self.stop()
@@ -26,17 +31,20 @@ class ActiveBuzzer(Buzzer):
     Cannot control the tone. Only turn on and off.
     """
     
-    def __init__(self, pin):
+    def __init__(self, pin, name='Buzzer'):
+        super().__init__(pin, name)
         self._buz = Pin(pin, Pin.OUT)
    
     def play(self, tone=500):
         """ Play sound. Tone is ignored. """
         
+        Log.i(f"Start playing {self._name}")
         self._buz.value(1)
         
     def stop(self):
         """ Stop the sound. """
         
+        Log.i(f"Stop playing {self._name}")
         self._buz.value(0)
     
 class PassiveBuzzer(Buzzer):
@@ -46,8 +54,9 @@ class PassiveBuzzer(Buzzer):
     is controlled by the duty cycle. Setting duty cycle to 0 stops sound.
     """
     
-    def __init__(self, pin):
+    def __init__(self, pin, name='Buzzer'):
         Log.i("PassiveBuzzer: constructor")
+        super().__init__(pin, name)
         self._buz = PWM(Pin(pin))
         self._volume = 5
         self._playing = False
@@ -56,7 +65,7 @@ class PassiveBuzzer(Buzzer):
     def play(self, tone=500):
         """ play the supplied tone. """
         
-        Log.i(f"PassiveBuzzer: playing tone {tone}")
+        Log.i(f"{self._name}: playing tone {tone}")
         self._buz.freq(tone)
         self._buz.duty_u16(self._volume * 100)
         self._playing = True
@@ -64,14 +73,14 @@ class PassiveBuzzer(Buzzer):
     def stop(self):
         """ Stop playing sound """
         
-        Log.i("PassiveBuzzer: stopping tone")
+        Log.i(f"(self._name}: stopping tone")
         self._buz.duty_u16(0)
         self._playing = False
 
     def setVolume(self, volume=5):
         """ Change the volume of the sound currently playing and future plays """
         
-        Log.i(f"PassiveBuzzer: changing volume to {volume}")
+        Log.i(f"{self._name}: changing volume to {volume}")
         self._volume = volume
         if (self._playing):
             self._buz.duty_u16(self._volume * 100)

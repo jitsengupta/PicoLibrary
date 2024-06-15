@@ -2,12 +2,14 @@
 # Sensors.py
 # A simple Sensor hierarchy for digital and analog sensors
 # Added support for Ultrasonic Sensor on 9/11/23
+# Added support for DHT11/DHT22 sensor on 6/14/24
 # Author: Arijit Sengupta
 """
 
 from machine import Pin, ADC
 import utime
 import math
+import dht
 from Log import *
 
 class Sensor:
@@ -27,12 +29,13 @@ class Sensor:
     so lowactive should be False
     """
     
-    def __init__(self, pin, lowactive = True):
+    def __init__(self, pin, name='Sensor', lowactive = True):
         self._pin = pin
         self._lowactive = lowactive
+        self._name = name
         
     def tripped(self)->bool:
-        Log.e(f"tripped not implemented for {type(self).__name__}")
+        Log.e(f"tripped not implemented for {type(self).__name__} {self._name}")
         return False
 
 class DigitalSensor(Sensor):
@@ -43,14 +46,14 @@ class DigitalSensor(Sensor):
     We are just going to poll this to keep things simple
     """
     
-    def __init__(self, pin, lowactive=True):
-        super().__init__(pin, lowactive)
+    def __init__(self, pin, name='Digital Sensor', lowactive=True):
+        super().__init__(pin, name, lowactive)
         self._pinio = Pin(self._pin, Pin.IN)
 
     def tripped(self)->bool:
         v = self._pinio.value()
         if (self._lowactive and v == 0) or (not self._lowactive and v == 1):
-            Log.i("DigitalLightSensor: sensor tripped")
+            Log.i(f"DigitalSensor {self._name}: sensor tripped")
             return True
         else:
             return False
@@ -62,13 +65,17 @@ class TiltSensor(DigitalSensor):
     much like a button which is always pressed.
     """
     
-    def __init__(self, pin):
+    def __init__(self, pin, name='Tilt Sensor'):
         # Init - do not call the super init - just create the Pin.
-
-        self._pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        super().__init__(pin, name)
+        self._pinio = Pin(pin, Pin.IN, Pin.PULL_UP)
         
     def tripped(self):
-        return self._pin.value() == 1
+        if self._pinio.value() == 1:
+            Log.i(f"TiltSensor {self._name}: sensor tripped")
+            return True
+        else:
+            return False
 
 class AnalogSensor(Sensor):
     """
@@ -78,10 +85,10 @@ class AnalogSensor(Sensor):
     We are just going to poll this to keep things simple
     """
     
-    def __init__(self, pin, lowactive=True, threshold = 30000):
+    def __init__(self, pin, name='Analog Sensor', lowactive=True, threshold = 30000):
         """ analog sensors will need to be sent a threshold value to detect trip """
         
-        super().__init__(pin, lowactive)
+        super().__init__(pin, name, lowactive)
         self._pinio = ADC(self._pin)
         self._threshold = threshold
 
@@ -90,7 +97,7 @@ class AnalogSensor(Sensor):
         
         v = self.rawValue()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            Log.i("AnalogSensor: sensor tripped")
+            Log.i(f"AnalogSensor {self._name}: sensor tripped")
             return True
         else:
             return False
@@ -106,14 +113,14 @@ class TempSensor(AnalogSensor):
     are what matters.
     """
     
-    def __init__(self, pin, lowactive=False, threshold=60):
+    def __init__(self, pin, name='Temp Sensor', lowactive=False, threshold=60):
         """
         Create a new temp sensor - similar to regular analog sensor
         but now tripped will return true when temp is lower than threshold (lowactive=True)
         and higher than threshold (lowactive=False)
         """
         
-        super().__init__(pin, lowactive, threshold)
+        super().__init__(pin, name, lowactive, threshold)
         
     def rawValue(self):
         """
@@ -144,8 +151,8 @@ class UltrasonicSensor(Sensor):
     so when distance is < 10cm, it will return true for tripped.
     """
 
-    def __init__(self, trigger, echo, *, lowactive = True, threshold=10.0):
-        super().__init__(trigger, lowactive)
+    def __init__(self, *, trigger=0, echo=1, name='Ultrasonic', lowactive = True, threshold=10.0):
+        super().__init__(trigger, name, lowactive)
         self._trigger = Pin(trigger, Pin.OUT)
         self._echo = Pin(echo, Pin.IN)
         self._threshold = threshold
@@ -171,7 +178,69 @@ class UltrasonicSensor(Sensor):
         
         v = self.getDistance()
         if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
-            Log.i("UltrasonicSensor: sensor tripped")
+            Log.i(f"UltrasonicSensor {self._name}: sensor tripped")
             return True
         else:
             return False
+
+# DHT11/DHT22 Sensor
+class DHTSensor(DigitalSensor):
+    def __init__(self, pin, name='DHT', lowactive=False, threshold=60, poll_delay=2000, sensor_type='DHT11'):
+        """
+        Create a new DHT sensor - similar to regular digital sensor but can take
+        either the form of a DHT11 or DHT22 based on the sensor_type parameter
+
+        DHT11 is less accurate but cheaper, DHT22 is more accurate but more expensive
+
+        Note that the DHT sensor is a digital sensor but it returns two values - temperature
+        and humidity. So we subclass DigitalSensor but override the rawValue method
+
+        Also, the DHT sensor is a bit slow, so we will not poll it as frequently as other sensors.
+        To avoid to much polling, a default poll parameter is set to 2 seconds.
+
+        The threshold is set to 60F by default, but can be changed. This is used to determine
+        if the sensor is tripped or not. Only the temperature is used for tripping.
+        """
+        super().__init__(pin, name, lowactive)
+        self._sensor_type = sensor_type
+        self._sensor_class = dht.DHT11 if sensor_type == "DHT11" else dht.DHT22
+        self._dht_sensor = self._sensor_class(Pin(self._pin))
+        self._last_poll_time = 0
+        self._poll_delay = poll_delay
+        self._threshold = threshold
+
+    def getTemperature(self):
+        """
+        Return the temperature of the sensor
+        """
+        if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
+            self._dht_sensor.measure()
+        self._last_poll_time = utime.ticks_ms()
+        return self._dht_sensor.temperature()
+
+    def getHumidity(self):
+        """
+        Return the humidity of the sensor
+        """
+        if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
+            self._dht_sensor.measure()
+        self._last_poll_time = utime.ticks_ms()
+        return self._dht_sensor.humidity()
+
+    def rawValue(self):
+        """
+        Returns a tuple of temperature and humidity
+        """
+        if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
+            self._dht_sensor.measure()
+        self._last_poll_time = utime.ticks_ms()
+        return (self._dht_sensor.temperature(), self._dht_sensor.humidity())
+
+    def tripped(self)->bool:
+        """
+        Sensor is tripped if temperature is higher or lower than threshold
+        """
+        if self._lowactive:
+            return self.getTemperature() < self._threshold
+        else:
+            return self.getTemperature() >= self._threshold
