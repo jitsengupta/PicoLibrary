@@ -73,7 +73,7 @@ class PassiveBuzzer(Buzzer):
     def stop(self):
         """ Stop playing sound """
         
-        Log.i(f"(self._name}: stopping tone")
+        Log.i(f"{self._name}: stopping tone")
         self._buz.duty_u16(0)
         self._playing = False
 
