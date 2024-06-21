@@ -118,6 +118,8 @@ class StateModel:
         if self._running:
             self._handler.stateLeft(self._curState, NO_EVENT)
         self._running = False
+        for b in self._buttons:
+            b.setHandler(None)
         self._curState = -1
 
     def gotoState(self, newState, event=NO_EVENT):

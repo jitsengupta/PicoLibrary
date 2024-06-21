@@ -78,6 +78,13 @@ class MyControllerTemplate:
         # than the default 0.1s. e.g.,  self._model.run(0.25)
         self._model.run()
 
+    def stop(self):
+        # The stop method should simply do any cleanup as needed
+        # and then call the model's stop method.
+        # This removes the button's handlers but will need to see
+        # if the IRQ handlers should also be removed
+        self._model.stop()
+        
     """
     stateDo - the method that handles the do/actions for each state
     """
@@ -132,4 +139,8 @@ class MyControllerTemplate:
 # If you are using a separate main.py or other control script,
 # you will run your model from there.
 if __name__ == '__main__':
-    MyControllerTemplate().run()
+    p = MyControllerTemplate()
+    try:
+        p.run()
+    except KeyboardInterrupt:
+        p.stop()    
