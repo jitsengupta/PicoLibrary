@@ -70,7 +70,7 @@ class StateModel:
         self._running = False
         self._transitions = []
         for i in range(0, numstates):
-            self._transitions.append({})
+            self._transitions.append(None)
         self._curState = -1
         self._handler = handler
         self._debug = debug
@@ -79,16 +79,24 @@ class StateModel:
         self._timers = []
 
     def addTransition(self, fromState, events, toState):
-        """
-        Once the model is created, you must add all the transitions
-        for known events. See documentation
-        of the Counters classes to see how to use them.
-        """
         for event in events:
             if event in self._events:
-                self._transitions[fromState][event] = toState
+                if not self._transitions[fromState]:
+                    self._transitions[fromState] = []
+                self._transitions[fromState].append((event,toState))
             else:
                 raise ValueError(f"Invalid event {event}")
+            
+    def getTransition(self, fromState, event):
+        """
+        Get the distination for this transition
+        """
+        
+        for (e,s) in self._transitions[fromState]:
+            if e == event:
+                return s
+        return None
+        
     
     def start(self):
         """ start the state model - always starts at state 0 as the start state """
@@ -140,8 +148,9 @@ class StateModel:
         """
         
         if (event in self._events):
-            if event in self._transitions[self._curState]:
-                newstate = self._transitions[self._curState][event]
+            
+            newstate = self.getTransition(self._curState, event)
+            if newstate:
                 if self._debug:
                     Log.d(f"Processing event {event}")
                 self.gotoState(newstate, event)
@@ -243,3 +252,4 @@ class StateModel:
     def timeout(self, name):
         eventname = f'{name}_timeout'
         self.processEvent(eventname)
+
