@@ -91,11 +91,11 @@ class StateModel:
         """
         Get the distination for this transition
         """
-        
+
         for (e,s) in self._transitions[fromState]:
             if e == event:
                 return s
-        return None
+        return -1
         
     
     def start(self):
@@ -150,7 +150,7 @@ class StateModel:
         if (event in self._events):
             
             newstate = self.getTransition(self._curState, event)
-            if newstate:
+            if newstate >= 0:
                 if self._debug:
                     Log.d(f"Processing event {event}")
                 self.gotoState(newstate, event)
