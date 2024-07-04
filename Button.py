@@ -18,7 +18,7 @@ class Button:
     which button was pressed/released
     """
     
-    def __init__(self, pin, name, *, buttonhandler=None, lowActive=True):
+    def __init__(self, pin, name, *, handler=None, lowActive=True):
         self._pinNo = pin
         self._name = name
         Log.i(f'Button constructor: create button {name} at pin {pin}')
@@ -29,7 +29,7 @@ class Button:
         self._debounce_time = 0
         self._lowActive = lowActive
         self._lastStatus = None
-        self._buttonhandler = buttonhandler
+        self._handler = handler
         self._pin.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
 
     def isPressed(self):
@@ -37,10 +37,10 @@ class Button:
         
         return (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
     
-    def setHandler(self, buttonhandler):
+    def setHandler(self, handler):
         """ A class that has buttonPressed(name) and buttonReleased(name) methods """
         
-        self._buttonhandler = buttonhandler
+        self._handler = handler
         
     def _callback(self, pin):
         """ The private interrupt handler - will call appropriate handlers """
@@ -50,11 +50,11 @@ class Button:
         if ((self._lastStatus == None or self._lastStatus != v) and t-self._debounce_time) > 50:
             self._debounce_time=t
             self._lastStatus = v
-            if self._buttonhandler is not None:
+            if self._handler is not None:
                 if self.isPressed():
-                    self._buttonhandler.buttonPressed(self._name)
+                    self._handler.buttonPressed(self._name)
                 else:
-                    self._buttonhandler.buttonReleased(self._name)
+                    self._handler.buttonReleased(self._name)
         #self._debounce_time=t
 
 class Joystick(Button):
@@ -87,9 +87,9 @@ class Joystick(Button):
     # Status text
     statuscodes = ['Center', 'Up', 'Down', 'Left', 'Right', 'Moving']
 
-    def __init__(self, vpin, hpin, swpin, name, *, buttonhandler=None, delta=1000):
+    def __init__(self, vpin, hpin, swpin, name, *, handler=None, delta=1000):
         # Let the superclass handle all button functionality
-        super().__init__(swpin, name, buttonhandler=buttonhandler, lowActive=True)
+        super().__init__(swpin, name, handler=handler, lowActive=True)
         Log.i(f'Joystick constructor: create joystick at v:{vpin}, h:{hpin}')
 
         # H and V axis pins must be standard ADC supporting

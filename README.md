@@ -16,6 +16,7 @@ Currently supported hardware - (more to be added)
 * Composite lights - TrafficLight (red, yellow, green), Pixel (R, G, B) and NeoPixel (PIO)
 * Displays - 160x displays (both I2C as well has GPIO)
 * Displays - OLED displays (SSD1306 driver)
+* LCD Displays - Currently ST7789 only supported
 * Displays - 7 segment displays (both sda/scl controlled as well as bit-banged using PIO)
 * LED matrix displays - (MAX7219 driver)
 * Sensors - both ditigal (0/1) as well as Analog (ADC 16 bit) sensors

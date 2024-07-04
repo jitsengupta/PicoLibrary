@@ -136,3 +136,6 @@ StarInvader.py
 Matcher.py
 .DS_Store
 /test
+.vscode/settings.json
+.vscode/extensions.json
+.micropico

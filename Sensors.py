@@ -21,17 +21,17 @@ class Sensor:
     Parameters
     --------
     pin: pin number where the sensor is connected
-    lowactive: set to True if the sensor gets low (or under threshold)
+    lowActive: set to True if the sensor gets low (or under threshold)
     when tripped. So an analog light sensor should normally get a high
-    value but when covered, go low. So lowactive should be True
+    value but when covered, go low. So lowActive should be True
     
     A force sensor would be opposite - tripped when force gets high
-    so lowactive should be False
+    so lowActive should be False
     """
     
-    def __init__(self, pin, name='Sensor', lowactive = True):
+    def __init__(self, pin, name='Sensor', lowActive = True):
         self._pin = pin
-        self._lowactive = lowactive
+        self._lowActive = lowActive
         self._name = name
         
     def tripped(self)->bool:
@@ -46,13 +46,13 @@ class DigitalSensor(Sensor):
     We are just going to poll this to keep things simple
     """
     
-    def __init__(self, pin, name='Digital Sensor', lowactive=True):
-        super().__init__(pin, name, lowactive)
+    def __init__(self, pin, name='Digital Sensor', lowActive=True):
+        super().__init__(pin, name, lowActive)
         self._pinio = Pin(self._pin, Pin.IN)
 
     def tripped(self)->bool:
         v = self._pinio.value()
-        if (self._lowactive and v == 0) or (not self._lowactive and v == 1):
+        if (self._lowActive and v == 0) or (not self._lowActive and v == 1):
             Log.i(f"DigitalSensor {self._name}: sensor tripped")
             return True
         else:
@@ -85,10 +85,10 @@ class AnalogSensor(Sensor):
     We are just going to poll this to keep things simple
     """
     
-    def __init__(self, pin, name='Analog Sensor', lowactive=True, threshold = 30000):
+    def __init__(self, pin, name='Analog Sensor', lowActive=True, threshold = 30000):
         """ analog sensors will need to be sent a threshold value to detect trip """
         
-        super().__init__(pin, name, lowactive)
+        super().__init__(pin, name, lowActive)
         self._pinio = ADC(self._pin)
         self._threshold = threshold
 
@@ -96,7 +96,7 @@ class AnalogSensor(Sensor):
         """ sensor is tripped if sensor value is higher or lower than threshold """
         
         v = self.rawValue()
-        if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
+        if (self._lowActive and v < self._threshold) or (not self._lowActive and v > self._threshold):
             Log.i(f"AnalogSensor {self._name}: sensor tripped")
             return True
         else:
@@ -113,14 +113,14 @@ class TempSensor(AnalogSensor):
     are what matters.
     """
     
-    def __init__(self, pin, name='Temp Sensor', lowactive=False, threshold=60):
+    def __init__(self, pin, name='Temp Sensor', lowActive=False, threshold=60):
         """
         Create a new temp sensor - similar to regular analog sensor
-        but now tripped will return true when temp is lower than threshold (lowactive=True)
-        and higher than threshold (lowactive=False)
+        but now tripped will return true when temp is lower than threshold (lowActive=True)
+        and higher than threshold (lowActive=False)
         """
         
-        super().__init__(pin, name, lowactive, threshold)
+        super().__init__(pin, name, lowActive, threshold)
         
     def rawValue(self):
         """
@@ -144,15 +144,15 @@ class UltrasonicSensor(Sensor):
     AnalogSensor makes more sense. But given AnalogSensor should only be
     used in ADC pins, it is better to subclass the Sensor superclass.
     
-    Continuing to use the lowactive and threshold like AnalogSensor however.
+    Continuing to use the lowActive and threshold like AnalogSensor however.
 
-    init by sending trigger, echo and optionally lowactive and threshold
-    parameters. Threshold defaults to 10cm, and lowactive defaults to true
+    init by sending trigger, echo and optionally lowActive and threshold
+    parameters. Threshold defaults to 10cm, and lowActive defaults to true
     so when distance is < 10cm, it will return true for tripped.
     """
 
-    def __init__(self, *, trigger=0, echo=1, name='Ultrasonic', lowactive = True, threshold=10.0):
-        super().__init__(trigger, name, lowactive)
+    def __init__(self, *, trigger=0, echo=1, name='Ultrasonic', lowActive = True, threshold=10.0):
+        super().__init__(trigger, name, lowActive)
         self._trigger = Pin(trigger, Pin.OUT)
         self._echo = Pin(echo, Pin.IN)
         self._threshold = threshold
@@ -177,7 +177,7 @@ class UltrasonicSensor(Sensor):
         """ sensor is tripped if distance is higher or lower than threshold """
         
         v = self.getDistance()
-        if (self._lowactive and v < self._threshold) or (not self._lowactive and v > self._threshold):
+        if (self._lowActive and v < self._threshold) or (not self._lowActive and v > self._threshold):
             Log.i(f"UltrasonicSensor {self._name}: sensor tripped")
             return True
         else:
@@ -185,7 +185,7 @@ class UltrasonicSensor(Sensor):
 
 # DHT11/DHT22 Sensor
 class DHTSensor(DigitalSensor):
-    def __init__(self, pin, name='DHT', lowactive=False, threshold=60, poll_delay=2000, sensor_type='DHT11'):
+    def __init__(self, pin, name='DHT', lowActive=False, threshold=60, poll_delay=2000, sensor_type='DHT11'):
         """
         Create a new DHT sensor - similar to regular digital sensor but can take
         either the form of a DHT11 or DHT22 based on the sensor_type parameter
@@ -201,7 +201,7 @@ class DHTSensor(DigitalSensor):
         The threshold is set to 60F by default, but can be changed. This is used to determine
         if the sensor is tripped or not. Only the temperature is used for tripping.
         """
-        super().__init__(pin, name, lowactive)
+        super().__init__(pin, name, lowActive)
         self._sensor_type = sensor_type
         self._sensor_class = dht.DHT11 if sensor_type == "DHT11" else dht.DHT22
         self._dht_sensor = self._sensor_class(Pin(self._pin))
@@ -240,7 +240,7 @@ class DHTSensor(DigitalSensor):
         """
         Sensor is tripped if temperature is higher or lower than threshold
         """
-        if self._lowactive:
+        if self._lowActive:
             return self.getTemperature() < self._threshold
         else:
             return self.getTemperature() >= self._threshold

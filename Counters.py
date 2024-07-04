@@ -15,8 +15,9 @@ class Counter:
     everything else should be defined at subclass level
     """
     
-    def __init__(self):
-        Log.i("Counter: constructor")
+    def __init__(self, name='Counter'):
+        Log.i(f"{name}: constructor")
+        self._name = name
         self._count = 0
 
     def reset(self):
@@ -26,9 +27,9 @@ class Counter:
 class UpDownCounter(Counter):
     """ A basic updown counter - can go up or down, can set up a min and max """
     
-    def __init__(self, min = None, max = None):
-        Log.i("Updowncounter constructor")
-        super().__init__()
+    def __init__(self, name='Updown counter', min = None, max = None):
+        Log.i(f"{name} constructor")
+        super().__init__(name)
         self._min = min
         self._max = max
 
@@ -65,9 +66,9 @@ class TimeKeeper(Counter):
     count to 0
     """
     
-    def __init__(self):
-        Log.i("Timekeeper: constructor")
-        super().__init__()
+    def __init__(self,name='Timekeeper'):
+        Log.i(f"{name} : constructor")
+        super().__init__(name)
         self._starttime = 0
         self._running = False
 
@@ -116,8 +117,8 @@ class BaseTimer(Counter):
     the time runs out.
     """
 
-    def __init__(self, handler=None):
-        super().__init__()
+    def __init__(self, name='timer', handler=None):
+        super().__init__(name)
         self._handler = handler
         self._started = False
 
@@ -145,14 +146,14 @@ class HardwareTimer(BaseTimer):
     
     """
     
-    def __init__(self, handler=None):
+    def __init__(self, name='Hardware Timer', handler=None):
         """
         A hardware timer must be initialized with a handler. The handler must implement
         a timeout() method which will be called when the timer is up. Ideally, there
         should only be a single timer active at a time.
         """
         
-        super().__init__(handler)
+        super().__init__(name, handler)
         self._timer = Timer(-1)
 
     def start(self, seconds):
@@ -170,7 +171,7 @@ class HardwareTimer(BaseTimer):
     
     def timeout(self, timer):
         self.cancel()
-        self._handler.timeout()
+        self._handler.timeout(self._name)
 
 class SoftwareTimer(BaseTimer):
     """
@@ -180,9 +181,8 @@ class SoftwareTimer(BaseTimer):
     call the timeout function of the caller just like the hardware timer.
     """
     
-    def __init__(self, handler):
-        super().__init__()
-        self._handler = handler
+    def __init__(self, name='Software Timer', handler=None):
+        super().__init__(name, handler)
         self._starttime = 0
         self._started = False
 
@@ -208,10 +208,10 @@ class SoftwareTimer(BaseTimer):
         """
         
         if self._started and time.ticks_diff(time.ticks_ms(), self._starttime) > self._count * 1000:
-            Log.i(f"{self._count} sec timer is up")
+            Log.i(f"{self._name}: {self._count} sec timer is up")
             self._started = False
             self._count = 0
-            self._handler.timeout()
+            self._handler.timeout(self._name)
 
 class Time:
     @classmethod
