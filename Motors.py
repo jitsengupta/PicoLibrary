@@ -6,7 +6,7 @@ of motors.
 
 from machine import Pin, PWM
 from time import sleep
-
+from Log import *
 
 class Motor:
     """
@@ -51,7 +51,7 @@ class Stepper(Motor):
         be any number. Note that higher than 360 will cause multiple
         rotations of the stepper.
         """
-
+        Log.i(f"Setting angle of {self._name} to {angle}")
         self.rotate(angle - self._curPos)
         self._running = False
 
@@ -64,6 +64,7 @@ class Stepper(Motor):
         cause multiple rotations
         """
 
+        Log.i(f"Rotating {self._name} by {angle} degrees") 
         numsteps = round(float(angle)/1.8)
         if numsteps < 0:
             self._dir.value(0)
@@ -103,6 +104,7 @@ class Stepper(Motor):
         self._curPos = self._curPos % 360 # Let's forget higher spin positions
         n = 0
         
+        Log.i(f"Spinning {self._name} {'clockwise' if direction == 1 else 'anti-clockwise'} {times} times at speed {speed} ")
         while self._running and (times == 0 or n < times):
             n = n + 1
             for x in range(0,200):
@@ -112,6 +114,7 @@ class Stepper(Motor):
                 self._curPos = self._curPos + 1.8 * (1 if direction else -1)
                 if self._curPos >= 360 or self._curPos < 0:
                     self._curPos = self._curPos % 360
+        Log.i(f"Stopped spinning {self._name}")
 
 class Servo(Motor):
     def __init__(self, pin, name='Unnamed Servo'):
@@ -135,7 +138,8 @@ class Servo(Motor):
             angle = 0
         if angle > 180:
             angle = 180
-
+        
+        Log.i(f"Setting angle of {self._name} to {angle}")
         duty = int((8000-1500)*float(angle)/180.0)+1500
         self._pwm.duty_u16(duty)
         self._curPos = angle
@@ -148,8 +152,67 @@ class Servo(Motor):
         First rotation will set to 90, unless an angle is set before
         """
 
+        Log.i(f"Rotating {self._name} by {angle} degrees")  
         if self._curPos < 0:
             self.setAngle(90)
         else:
             self.setAngle(self._curPos + angle)
         
+# Rui Santos & Sara Santos - Random Nerd Tutorials
+# Complete project details at https://RandomNerdTutorials.com/raspberry-pi-pico-dc-motor-micropython/
+
+class DCMotor(Motor):
+    def __init__(self, enable_pin = 0, name="DCMotor", forward_pin = 1, backward_pin=2, min_duty=15000, max_duty=65535):
+        super().__init__(enable_pin, name)
+        self.pin1 = Pin(forward_pin, Pin.OUT)
+        self.pin2 = Pin(backward_pin, Pin.OUT)
+        self.enable_pin = PWM(Pin(enable_pin), 1000)
+        self.min_duty = min_duty
+        self.max_duty = max_duty
+
+    def forward(self, speed=100):
+        Log.i(f"Moving {self._name} forward at speed {speed}")
+        self.speed = speed
+        self.enable_pin.duty_u16(self.duty_cycle(self.speed))
+        self.pin1.value(1)
+        self.pin2.value(0)
+
+    def backwards(self, speed=100):
+        Log.i(f"Moving {self._name} backwards at speed {speed}")
+        self.speed = speed
+        self.enable_pin.duty_u16(self.duty_cycle(self.speed))
+        self.pin1.value(0)
+        self.pin2.value(1)
+
+    def stop(self):
+        Log.i(f"Stopping {self._name}")
+        self.enable_pin.duty_u16(0)
+        self.pin1.value(0)
+        self.pin2.value(0)
+
+    def duty_cycle(self, speed):
+        if speed <= 0 or speed > 100:
+            duty_cycle = 0
+        else:
+            duty_cycle = int(self.min_duty + (self.max_duty - self.min_duty) * (speed / 100))
+        return duty_cycle
+    
+if __name__ == '__main__':
+    m = DCMotor(enable_pin=13, forward_pin=14,backward_pin=15)
+    while True:
+        # Start up slow to full speed
+        for x in range(20,110,10):
+            m.forward(x)
+            sleep(0.5)
+        
+        # stop for a bit
+        m.stop()
+        sleep(1)
+        # reverse slow to full speed
+        for x in range(20,110,10):
+            m.backwards(x)
+            sleep(0.5)
+        
+        # stop for a bit
+        m.stop()
+        sleep(1)
