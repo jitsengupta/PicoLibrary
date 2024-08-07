@@ -148,6 +148,11 @@ class LCDDisplay(Display):
         shapearray needs to be a bytearray that can
         be created by going to
         https://maxpromer.github.io/LCD-Character-Creator/
+        and then copying the bytes into a bytearray as a list of hex values
+        as in the example below:
+
+        d.addShape(1, [0x00,0x0A,0x0A,0x00,0x11,0x0E,0x04,0x00]) # a smiley face
+        d.showText(chr(1), 0,5) # show the smiley face at position 5 of row 0
         """
         if position < 0 or position > 7:
             raise ValueError('Position must be between 0 and 7.')
