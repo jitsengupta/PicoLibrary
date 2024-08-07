@@ -62,7 +62,7 @@ class LCDDisplay(Display):
     
     """
     
-    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0, *, sda=-1, scl=-1, i2cid=0):
+    def __init__(self, rs=5, e=4, d4=3, d5=2, d6=1, d7=0, *, sda=-1, scl=-1):
         """
         Combined constructor for the direct-driven displays
         explicitly pass in the sda and scl if you need to use I2C
@@ -79,6 +79,16 @@ class LCDDisplay(Display):
                 num_lines=2, num_columns=16)
         else:
             Log.i("LCDDisplay (I2C) Constructor")
+            """
+            Lets determine the i2c id from the sda and scl pins
+            """
+            i2cid = -1 # lets set an invalid value to start with
+            if (sda == 0 and scl == 1) or (sda == 4 and scl == 5) or (sda == 8 and scl == 9) or (sda == 12 and scl == 13) or (sda == 16 and scl == 17) or (sda == 20 and scl == 21):    
+                i2cid = 0
+            elif (sda == 2 and scl == 3) or (sda == 6 and scl == 7) or (sda == 10 and scl == 11) or (sda == 14 and scl == 15) or (sda == 18 and scl == 19) or (sda == 26 and scl == 27):
+                i2cid = 1
+            else:
+                raise ValueError('Invalid SDA/SCL pins')
             i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
             try:
                 I2C_ADDR = i2c.scan()[0]
