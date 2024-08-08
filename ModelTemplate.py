@@ -78,7 +78,7 @@ class MyControllerTemplate:
         
         # some examples:
         self._model.addTransition(0, ["button1_press"], 1)
-        self._model.addTransition(1, ["timer1_timout"], 0)
+        self._model.addTransition(1, ["timer1_timeout"], 0)
         # etc.
     
     """
