@@ -238,18 +238,19 @@ class StateModel:
         All events must have distinct names. Exception will be raised if the
         event already exists.
         """
+        
         if event in self._events:
             raise ValueError(f'An event with the name {event} already exists')
         else:
             self._events.append(event)
         
-    """
-    If you are using a timer, handle the timeout callback
-    My model can use timeout events for transitions, so simply
-    send the event to the model and it will take care of
-    the rest.
-    """
     def timeout(self, name):
+        """
+        Internal event handler for any timeouts received from timers
+        added to the model. Will cause the timername_timeout event
+        to be processed by the transition table
+        """
+        
         eventname = f'{name}_timeout'
         self.processEvent(eventname)
 

@@ -19,6 +19,10 @@ class Button:
     """
     
     def __init__(self, pin, name, *, handler=None, lowActive=True):
+        """
+        Constructor - set up attributes hardware pin, and the IRQ
+        """
+        
         self._pinNo = pin
         self._name = name
         Log.i(f'Button constructor: create button {name} at pin {pin}')

@@ -31,6 +31,7 @@ class Net:
         """
         Connect to the wifi network with a maximum wait time
         """
+        
         self._wlan.active(True)
         if self._password != None:
             self._wlan.connect(self._ssid, self._password)
@@ -56,6 +57,7 @@ class Net:
     
     def disconnect(self):
         """ Disconnect from wifi network """
+        
         self._wlan.disconnect()
         self._wlan.active(False)
         
@@ -70,6 +72,8 @@ class Net:
             return 'Not connected'
         
     def getMac(self):
+        """ Get the MAC address of the interface """
+        
         mac = ubinascii.hexlify(self._wlan.config('mac'),':').decode()
         return mac
         
@@ -98,6 +102,7 @@ class Net:
                             'sec' shows seconds
         Unfortunately only one extra can be chosen
         """
+        
         wk = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         (yy, mm, dd, h, m, s, w, y) = time.localtime()

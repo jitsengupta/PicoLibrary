@@ -201,6 +201,7 @@ class DHTSensor(DigitalSensor):
         The threshold is set to 60F by default, but can be changed. This is used to determine
         if the sensor is tripped or not. Only the temperature is used for tripping.
         """
+        
         super().__init__(pin, name, lowActive)
         self._sensor_type = sensor_type
         self._sensor_class = dht.DHT11 if sensor_type == "DHT11" else dht.DHT22
@@ -213,6 +214,7 @@ class DHTSensor(DigitalSensor):
         """
         Return the temperature of the sensor
         """
+        
         if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
             self._dht_sensor.measure()
         self._last_poll_time = utime.ticks_ms()
@@ -222,6 +224,7 @@ class DHTSensor(DigitalSensor):
         """
         Return the humidity of the sensor
         """
+        
         if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
             self._dht_sensor.measure()
         self._last_poll_time = utime.ticks_ms()
@@ -231,6 +234,7 @@ class DHTSensor(DigitalSensor):
         """
         Returns a tuple of temperature and humidity
         """
+        
         if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
             self._dht_sensor.measure()
         self._last_poll_time = utime.ticks_ms()
@@ -240,6 +244,7 @@ class DHTSensor(DigitalSensor):
         """
         Sensor is tripped if temperature is higher or lower than threshold
         """
+        
         if self._lowActive:
             return self.getTemperature() < self._threshold
         else:

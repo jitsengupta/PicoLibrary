@@ -81,13 +81,15 @@ class MyControllerTemplate:
         self._model.addTransition(1, ["timer1_timeout"], 0)
         # etc.
     
-    """
-    stateEntered - is the handler for performing entry/actions
-    You get the state number of the state that just entered
-    Make sure actions here are quick
-    """
     def stateEntered(self, state, event):
-        # Again if statements to do whatever entry/actions you need
+        """
+        stateEntered - is the handler for performing entry actions
+        You get the state number of the state that just entered
+        Make sure actions here are quick
+        """
+        
+        # If statements to do whatever entry/actions you need for
+        # for states that have entry actions
         Log.d(f'State {state} entered on event {event}')
         if state == 0:
             # entry actions for state 0
@@ -98,26 +100,27 @@ class MyControllerTemplate:
             self._timer.start(5)
         
             
-    """
-    stateLeft - is the handler for performing exit/actions
-    You get the state number of the state that just entered
-    Make sure actions here are quick
-    
-    This is just like stateEntered, perform only exit/actions here
-    """
-
     def stateLeft(self, state, event):
+        """
+        stateLeft - is the handler for performing exit/actions
+        You get the state number of the state that just entered
+        Make sure actions here are quick
+        
+        This is just like stateEntered, perform only exit/actions here
+        """
+
         Log.d(f'State {state} exited on event {event}')
         if state == 0:
             # exit actions for state 0
             pass
         # etc.
     
-    """
-    stateDo - the method that handles the do/actions for each state
-    """
     def stateDo(self, state):
-        # Now if you want to do different things for each state you can do it:
+        """
+        stateDo - the method that handles the do/actions for each state
+        """
+        
+        # Now if you want to do different things for each state that has do actions
         if state == 0:
             # State 0 do/actions
             pass
@@ -131,15 +134,16 @@ class MyControllerTemplate:
             # Here, you check the conditions that should check for this condition
             # Then ask the model to handle the event
             # if self.motionsensor.tripped():
-            # 	self._model.processEvent("motion")
+            #    self._model.processEvent("motion")
             pass
 
-    """
-    Create a run() method - you can call it anything you want really, but
-    this is what you will need to call from main.py or someplace to start
-    the state model.
-    """
     def run(self):
+        """
+        Create a run() method - you can call it anything you want really, but
+        this is what you will need to call from main.py or someplace to start
+        the state model.
+        """
+        
         # The run method should simply do any initializations (if needed)
         # and then call the model's run method.
         # You can send a delay as a parameter if you want something other

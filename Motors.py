@@ -14,6 +14,7 @@ class Motor:
     Currently simply stores the main pin (some motors take multiple pins)
     and a name for the motor.
     """
+    
     def __init__(self, pin, name='Unnamed Motor'):
         self._pin = pin
         self._name = name
@@ -51,6 +52,7 @@ class Stepper(Motor):
         be any number. Note that higher than 360 will cause multiple
         rotations of the stepper.
         """
+        
         Log.i(f"Setting angle of {self._name} to {angle}")
         self.rotate(angle - self._curPos)
         self._running = False
@@ -171,6 +173,8 @@ class DCMotor(Motor):
         self.max_duty = max_duty
 
     def forward(self, speed=100):
+        """ Spin motor forward at a percent speed (max:100)"""
+        
         Log.i(f"Moving {self._name} forward at speed {speed}")
         self.speed = speed
         self.enable_pin.duty_u16(self.duty_cycle(self.speed))
@@ -178,6 +182,8 @@ class DCMotor(Motor):
         self.pin2.value(0)
 
     def backwards(self, speed=100):
+        """ Spin motor backwards at a percent speed (max:100) """
+        
         Log.i(f"Moving {self._name} backwards at speed {speed}")
         self.speed = speed
         self.enable_pin.duty_u16(self.duty_cycle(self.speed))
@@ -185,6 +191,8 @@ class DCMotor(Motor):
         self.pin2.value(1)
 
     def stop(self):
+        """ Stop spinning the motor """
+        
         Log.i(f"Stopping {self._name}")
         self.enable_pin.duty_u16(0)
         self.pin1.value(0)

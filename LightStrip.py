@@ -46,6 +46,7 @@ class LightStrip(Light):
     
     def off(self):
         """ Turn all LEDs OFF - all black """
+        
         self._running = False
         time.sleep(0.1)
         self._clear()
@@ -54,6 +55,7 @@ class LightStrip(Light):
 
     def flip(self):
         """ Flip the clors on all the LEDs """
+        
         for x in range(0, self._numleds):
             self._np[x] = (255-self._np[x][0], 255-self._np[x][1], 255-self._np[x][2])
         self.show()
@@ -61,6 +63,7 @@ class LightStrip(Light):
 
     def setColor(self, color, numPixels= -1):
         """ Turn all LEDs up to a set number of pixels to a specific color """
+        
         if numPixels < 0 or numPixels > self._numleds:
             numPixels = self._numleds
         for i in range(numPixels):
@@ -77,6 +80,7 @@ class LightStrip(Light):
         To make multiple changes, you can speed up by setting
         show to False, then calling the show method
         """
+        
         self._set_pixel(pixelno, color)
         if show:
             self._np.write()
@@ -98,6 +102,7 @@ class LightStrip(Light):
         
     def run(self, runtype=0):
         """ Run a single cycle of FILLS, CHASES or RAINBOW """
+        
         self._running = True
         if runtype == LightStrip.FILLS:
             Log.i(f'{self._name} running fills')

@@ -20,6 +20,10 @@ class Buzzer:
         self._name = name
         
     def beep(self, tone=500, duration=150):
+        """
+        Beep the buzzer with the given tone for duration ms
+        """
+        
         Log.i(f"Beeping {self._name} at {tone}hz for {duration} ms")
         self.play(tone)
         time.sleep(duration / 1000)

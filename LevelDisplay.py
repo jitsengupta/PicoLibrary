@@ -4,6 +4,7 @@ A base LevelDisplay class with a couple of subclasses with implementations using
 A LightStrip and an LCD Display - I may add additional implementations in the future
 for example, using an actual 7 led bar - maybe with a shift register
 """
+
 from Displays import *
 from LightStrip import *
 from Log import *
@@ -13,12 +14,14 @@ class LevelDisplay:
     Superclass for LevelDisplay.
     Should not be initiated directly. Wish Python had a proper abstract class
     """
+    
     def __init__(self, levels):
         """
         Create a level Display with a max number of levels.
         Note that display will be from 0 (may be nothing displayed)
         Up to _levels_ so levels is inclusive.
         """
+        
         self._levels = levels
         self._curlevel = 0
         
@@ -53,6 +56,7 @@ class LightStripLevel(LevelDisplay):
         
     def showLevel(self, levelpct):
         """ Show the level in the light strip. """
+        
         level = levelpct
         super().showLevel(level)
         if self._curlevel == 0:
@@ -81,6 +85,8 @@ class LCDLevel(LevelDisplay):
             self._display.addShape(p, arr)
 
     def showLevel(self, levelpct, row=0, col=0):
+        """ Show the level as bars on the display. """
+
         level = levelpct
         super().showLevel(level)
         if self._curlevel == 0:

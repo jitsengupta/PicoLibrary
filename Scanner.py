@@ -28,6 +28,7 @@ class Scanner:
         NOTE 2. Wokwi does not seem to echo the keyboard data - I may be missing something
         data = s.scanData(timeout=5, clear=False) # no need to clear stdin
         """
+        
         if timeout <=0:
             return input(prompt)
         else:
