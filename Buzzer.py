@@ -12,11 +12,13 @@ class Buzzer:
     A simple buzzer class - use it to play and pause different sounds
     ranging from fequencies 10 through 10000
     default volume is half volume - set it between 0 and 10
-    """ 
+    """
+    
     def __init__(self, pin, name='Buzzer'):
         """
         Base class init - we don't do anything with the pin here
         """
+        
         self._name = name
         
     def beep(self, tone=500, duration=150):
