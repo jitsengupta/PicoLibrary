@@ -46,14 +46,14 @@ class LCDDisplay(Display):
     to do both parallel as well as i2c displays
     pass rs, e, d4, d5, d6, d7 pin numbers for parallel displays
     
-    pass sda, scl, i2cid for i2c displays - default is to use parallel so must pass sda/scl/i2cid
-    if using i2c
+    pass sda and scl for i2c displays - default is to use parallel so must pass
+    both sda/scl if using i2c
     
     To connect the display to I2C 0 on GPIO pins 0,1
-    usage: LCDDisplay(sda=0, scl=1, i2cid=0)
+    usage: LCDDisplay(sda=0, scl=1)
     
     To connect the display to I2C ID 1 on GPIO pins 2,3
-    usage: LCDDisplay(sda=2, scl=3, i2cid=1)
+    usage: LCDDisplay(sda=2, scl=3)
     
     To connect via parallel with rs on pin 5, e on pin 4
     and d4,d5,d6,d7 to pins 3,2,1 and 0:
