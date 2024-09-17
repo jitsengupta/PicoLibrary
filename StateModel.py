@@ -79,6 +79,13 @@ class StateModel:
         self._timers = []
 
     def addTransition(self, fromState, events, toState):
+        """
+        Add a transition to the state model. The transition is defined by the
+        source state, an array of events that will cause the transition, and the
+        destination state. The events array can have multiple events that will all
+        cause the same transition.
+        """
+
         for event in events:
             if event in self._events:
                 if not self._transitions[fromState]:
@@ -87,6 +94,38 @@ class StateModel:
             else:
                 raise ValueError(f"Invalid event {event}")
             
+    def setTransitionTable(self, transitions):
+        """
+        Set the entire transition table at once. The transitions should be in the form
+        of a matrix of tuples. Each row of the matrix corresponds to one source state
+        and the values in the matrix should be in the form of a tuple (event, destination).
+
+        For example, if you have 3 states and the transitions are as follows:
+        0 -> 1 on event1, 0 -> 2 on event2, 1 -> 2 on event3, 2 -> 0 on event4, 2 -> 1 on event5
+
+        Then the transition matrix should be:
+        [
+            [(event1, 1), (event2, 2)],
+            [(event3, 2)],
+            [(event4, 0), (event5, 1)]
+        ]
+
+        Note that only basic error checks are performed in this method. It is the responsibility
+        of the calling class to ensure that the transition table is correct.
+        """
+
+        # Check if the number of rows in the transition matrix is the same as the number of states
+        if len(transitions) != self._numstates:
+            self._numstates = len(transitions)
+            Log.e(f"Number of states in the transition matrix does not match the number of states in the model. Resetting the number of states to {self._numstates}")
+        # Check if the events are valid
+        for row in transitions:
+            for (e,s) in row:
+                if e not in self._events:
+                    raise ValueError(f"Invalid event {e}")
+
+        self._transitions = transitions
+
     def getTransition(self, fromState, event):
         """
         Get the distination for this transition
