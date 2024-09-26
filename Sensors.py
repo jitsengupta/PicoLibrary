@@ -160,11 +160,11 @@ class UltrasonicSensor(Sensor):
     def getDistance(self)->float:
         """ Get the distance of obstacle from the sensor in cm """
         
-        self._trigger.low()
+        self._trigger.off()
         utime.sleep_us(2)
-        self._trigger.high()
+        self._trigger.on()
         utime.sleep_us(5)
-        self._trigger.low()
+        self._trigger.off()
         while self._echo.value() == 0:
             signaloff = utime.ticks_us()
         while self._echo.value() == 1:
