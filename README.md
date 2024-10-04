@@ -1,5 +1,9 @@
 # PicoLibrary
 
+This is an ESP32 branch of the PicoLibrary - specific to only the generic Micropython firmware
+on the ESP32-max (Acebott variant for ESP32). This should in theory work for most ESP32 variants
+but likely not be tested for all potential hardware variants.
+
 A collection of classes around the Raspberry Pi Pico Hardware interface to make it easy to 
 work with Lights (LEDs, RGB LEDs), Sound (active and passive buzzers), Displays (Dot matrix 
 with Max7219, 7 segment displays bare and with TM 1637, 160x LCD modules with I2C backpacks
