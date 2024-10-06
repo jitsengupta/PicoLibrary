@@ -8,6 +8,7 @@ a blocking scan, so cannot use this for detecting multi-presses
 # Author: Arijit Sengupta
 """
 from machine import Pin
+import utime
 
 default_keys = [
     ['1','2','3','A'],
@@ -34,7 +35,7 @@ class Keypad:
         Initialize the keypad - send in the pin numbers that
         connect the rows and pin numbers that connect the columns
         """
-
+        self._lastscan = 0
         self._rows = len(row_pins)
         self._cols = len(col_pins)
 
@@ -56,18 +57,23 @@ class Keypad:
 
         self._keys = keys
 
-    def scanKey(self)->str:
+    def scanKey(self,delay=250)->str:
         """
         Scan the keypad once and return if anything is detected
         to be pressed. returns None if nothing is pressed.
+        
+        To avoid multi-presses, if a request comes from scanKey within
+        delay ms of the last valid scan, we are going to return None
         """
-
+        if utime.ticks_ms()-self._lastscan < delay:
+            return None
         for rowKey in range(self._rows):
             self._row_pins[rowKey].value(1)
             for colKey in range(self._cols):
                 if self._col_pins[colKey].value() == 1:
                     key = self._keys[rowKey][colKey]
                     self._row_pins[rowKey].value(0)
+                    self._lastscan = utime.ticks_ms()
                     return(key)
             self._row_pins[rowKey].value(0)
         return None
