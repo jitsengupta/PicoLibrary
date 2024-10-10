@@ -1,3 +1,10 @@
+"""
+Vehicle.py - Library for controlling a vehicle with a motor driver and shift register.
+This library is designed to work with the ESP32 microcontroller and the 74HC595 shift register.
+Originally created by Acebott and modified by Arijit Sengupta for MicroPython.
+Author: Arijit Sengupta
+"""
+
 from machine import Pin, PWM
 
 # Pin Definitions (Adjust according to your hardware)
@@ -59,37 +66,45 @@ class Vehicle:
 
         self.en_pin.value(0)  # Enable motor driver (adjust logic if needed)
         self.curspeed = 0
+        self.status = STOP
 
     def forward(self, speed=-1):
         """Moves the vehicle forward. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = FORWARD
         self.move(FORWARD, speed)
 
     def backward(self, speed=-1):
         """Moves the vehicle backward. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = BACKWARD
         self.move(BACKWARD, speed)
 
     def left(self, speed=-1):
         """Moves the vehicle left. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = MOVE_LEFT
         self.move(MOVE_LEFT, speed)
 
     def right(self, speed=-1):
         """Moves the vehicle right. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = MOVE_RIGHT
         self.move(MOVE_RIGHT, speed)
 
-    def rotate_left(self, speed=-1):
+    def rotateLeft(self, speed=-1):
         """Rotates the vehicle left. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = CONTRAROTATE
         self.move(CONTRAROTATE, speed)
 
-    def rotate_right(self, speed=-1):
+    def rotateRight(self, speed=-1):
         """Rotates the vehicle right. Speed is optional. If no speed specified it will use the previous speed."""
+        self.status = CLOCKWISE
         self.move(CLOCKWISE, speed)
         
     def stop(self):
         """Stops the vehicle."""
         self.curspeed = 0
+        self.status = STOP
         self.move(STOP, 0)
 
-    def set_speed(self, speed=MINSPEED):
+    def setSpeed(self, speed=MINSPEED):
         """Sets the motor speed."""
         self.curspeed = speed
 
@@ -119,6 +134,7 @@ class Vehicle:
         self.stcp_pin.value(0)  # Pull latch pin low
         self.shift_out(direction) 
         self.stcp_pin.value(1)  # Latch data
+        self.status = direction
 
     def shift_out(self, value):
         """Shifts out a byte of data to the shift register."""
