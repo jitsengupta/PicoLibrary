@@ -58,7 +58,7 @@ class Vehicle:
         self.stcp_pin = Pin(STCP_PIN, Pin.OUT)
 
         self.en_pin.value(0)  # Enable motor driver (adjust logic if needed)
-        self.cuspeed = 0
+        self.curspeed = 0
 
     def forward(self, speed=-1):
         """Moves the vehicle forward. Speed is optional. If no speed specified it will use the previous speed."""
@@ -86,12 +86,12 @@ class Vehicle:
         
     def stop(self):
         """Stops the vehicle."""
-        self.cuspeed = 0
+        self.curspeed = 0
         self.move(STOP, 0)
 
     def set_speed(self, speed=MINSPEED):
         """Sets the motor speed."""
-        self.cuspeed = speed
+        self.curspeed = speed
 
     def move(self, direction=FORWARD, speed=-1):
         """
@@ -109,11 +109,11 @@ class Vehicle:
             # Set the speed to a minimum value if it's below the minimum
             self.set_speed(MINSPEED)
         else:
-            self.cuspeed = speed
+            self.curspeed = speed
 
         # Set motor speeds (assuming both motors use the same speed)
-        self.pwm1.duty(speed) 
-        self.pwm2.duty(speed)
+        self.pwm1.duty(self.curspeed) 
+        self.pwm2.duty(self.curspeed)
 
         # Send direction bits to shift register
         self.stcp_pin.value(0)  # Pull latch pin low

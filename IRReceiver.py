@@ -15,6 +15,25 @@ from micropython_ir import *
 # PIN DEFINITIONS
 IR_PIN = 4  # Pin for IR receiver
 
+# CODES from Acebott remote
+UP = 0x46
+DOWN = 0x15
+LEFT = 0x44
+RIGHT = 0x43
+OK = 0x40
+BLEFT = 0x42
+BRIGHT = 0x4a
+ONE = 0x16
+TWO = 0x19
+THREE = 0x0d
+FOUR = 0x0c
+FIVE = 0x18
+SIX = 0x5e
+SEVEN = 0x08
+EIGHT = 0x1c
+NINE = 0x5a
+ZERO = 0x52
+
 class IRReceiver:
     """
     IR receiver class. Instantiate with a pin and a callback function.
