@@ -101,6 +101,17 @@ class TimeKeeper(Counter):
         super().reset()
         self._starttime = time.ticks_ms()
 
+    def elapsed_time(self, format='sec'):
+        """
+        Get the elapsed time in seconds (default) or ms by passing format='ms'
+        """
+
+        ms = time.ticks_diff(time.ticks_ms(),self._starttime)
+        if format == 'ms':
+            return ms
+        else:
+            return int(ms / 1000)
+
     def __str__(self) -> str:
         """ Get a string representation of time in HH:MM:SS.ms format """
         
