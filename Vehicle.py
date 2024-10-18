@@ -122,7 +122,7 @@ class Vehicle:
         # Use the last set speed if speed is negative
         if speed < 0 or (speed > 0 and speed < MINSPEED):
             # Set the speed to a minimum value if it's below the minimum
-            self.set_speed(MINSPEED)
+            self.setSpeed(MINSPEED)
         else:
             self.curspeed = speed
 
