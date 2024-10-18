@@ -106,6 +106,16 @@ class LCDDisplay(Display):
         self._lcd.clear()
         self._working = False
 
+    def clear(self, line=-1):
+        """
+        Clear only a single line - negative to reset
+        """
+
+        if line < 0 or line > 1:
+            self.reset()
+        else:
+            self.showText(f'{" "*16}',line)
+
     def showNumber(self, number, row=0, col=0):
         """
         show a single number

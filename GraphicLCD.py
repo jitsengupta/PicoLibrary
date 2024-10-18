@@ -19,7 +19,7 @@ REDRGB565   =   0x07E0
 GREENRGB565 =   0x001f
 BLUERGB565  =   0xf800
 WHITERGB565 =   0xffff
-
+BLACKRGB565 =   0x0
 
 class GraphicLCD(framebuf.FrameBuffer):
     """
@@ -59,7 +59,8 @@ class GraphicLCD(framebuf.FrameBuffer):
         self.green =   GREENRGB565
         self.blue  =   BLUERGB565
         self.white =   WHITERGB565
-
+        self.black =   BLACKRGB565
+        
     def reset(self):
         """
         Clear the display. By default clear sets the display to a black background.

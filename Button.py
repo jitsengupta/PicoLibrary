@@ -19,10 +19,10 @@ class Button:
     """
     
     def __init__(self, pin, name, *, handler=None, lowActive=True):
-        """
-        Constructor - set up attributes hardware pin, and the IRQ
-        """
-        
+	"""
+	Initialize attributes and other internal data
+	"""
+	
         self._pinNo = pin
         self._name = name
         Log.i(f'Button constructor: create button {name} at pin {pin}')
@@ -33,18 +33,28 @@ class Button:
         self._debounce_time = 0
         self._lowActive = lowActive
         self._lastStatus = None
-        self._handler = handler
-        self._pin.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
-
+        self._handler = None
+        self.setHandler(handler)
+    
     def isPressed(self):
         """ Check if the button is pressed or not - useful if polling """
         
         return (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
     
     def setHandler(self, handler):
-        """ A class that has buttonPressed(name) and buttonReleased(name) methods """
+        """ 
+	set the handler to a new handler. Pass None to remove existing handler
+	"""
         
+        # if the old handler was active already, or if the new handler is None, remove the irq
+        if self._handler is not None or handler is None:
+            self._pin.irq(handler = None)
+    
+        # Now set it to th enew handler
         self._handler = handler
+        # Create the IRQ if the handler is not None
+        if self._handler:
+            self._pin.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
         
     def _callback(self, pin):
         """ The private interrupt handler - will call appropriate handlers """
