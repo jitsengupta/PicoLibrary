@@ -107,6 +107,7 @@ class Vehicle:
     def setSpeed(self, speed=MINSPEED):
         """Sets the motor speed."""
         self.curspeed = speed
+        self.move(self.status, self.curspeed)
 
     def move(self, direction=FORWARD, speed=-1):
         """
