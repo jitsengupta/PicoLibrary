@@ -19,10 +19,10 @@ class Button:
     """
     
     def __init__(self, pin, name, *, handler=None, lowActive=True):
-	"""
-	Initialize attributes and other internal data
-	"""
-	
+        """
+        Initialize attributes and other internal data
+        """
+        
         self._pinNo = pin
         self._name = name
         Log.i(f'Button constructor: create button {name} at pin {pin}')
@@ -35,16 +35,18 @@ class Button:
         self._lastStatus = None
         self._handler = None
         self.setHandler(handler)
-    
+        
     def isPressed(self):
         """ Check if the button is pressed or not - useful if polling """
         
-        return (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
+        status = (self._lowActive and self._pin.value() ==0) or (not self._lowActive and self._pin.value() == 1)
+        Log.i(f'Button {self._name} isPressed: {status}')
+        return status
     
     def setHandler(self, handler):
         """ 
-	set the handler to a new handler. Pass None to remove existing handler
-	"""
+	    set the handler to a new handler. Pass None to remove existing handler
+	    """
         
         # if the old handler was active already, or if the new handler is None, remove the irq
         if self._handler is not None or handler is None:
@@ -66,8 +68,10 @@ class Button:
             self._lastStatus = v
             if self._handler is not None:
                 if self.isPressed():
+                    Log.i(f'Button {self._name} pressed')
                     self._handler.buttonPressed(self._name)
                 else:
+                    Log.i(f'Button {self._name} released')
                     self._handler.buttonReleased(self._name)
         #self._debounce_time=t
 
