@@ -8,6 +8,7 @@
 from time import sleep, sleep_ms
 from machine import Pin
 from Log import *
+from Lights import *
 
 class CompositeLight:
     """
@@ -75,7 +76,7 @@ class TrafficLight(CompositeLight):
     passed in
     """
     
-    def __init__(self, green, yellow, red):
+    def __init__(self, gpin, ypin, rpin):
         """
         # Traffic light constructor
         # Add the green, yellow and red lights to the array
@@ -84,9 +85,9 @@ class TrafficLight(CompositeLight):
         
         Log.i("TrafficLight constructor: add the lights in order")
         super().__init__()
-        self._lights.append(green)
-        self._lights.append(yellow)
-        self._lights.append(red)
+        self._lights.append(Light(gpin,'green'))
+        self._lights.append(Light(ypin, 'yellow'))
+        self._lights.append(Light(rpin, 'red'))
     
     def go(self):
         Log.i("Trafficlight - go/green")
@@ -129,14 +130,14 @@ class Pixel(CompositeLight):
     of a pixel that can be technically set to any color.
     """        
 
-    def __init__(self, R, G, B, commoncathode = True):
+    def __init__(self, Rpin, Gpin, Bpin, commoncathode = True):
         """     # Pixel constructor """
 
         Log.i("Pixel: Constructor - add R G B in that order")
         super().__init__()
-        self._lights.append(R)
-        self._lights.append(G)
-        self._lights.append(B)
+        self._lights.append(DimLight(Rpin, 'PixelR'))
+        self._lights.append(DimLight(Gpin, 'PixelG'))
+        self._lights.append(DimLight(Bpin, 'PixelB'))
         self._commoncathode = commoncathode
         self._running = False
         
@@ -156,26 +157,27 @@ class Pixel(CompositeLight):
         else:
             super().on()
        
-    def setColor(self, RR, GG, BB):
+    def setColor(self, color):
         """
         # setColor method - sets to a specific color
+        # color is an RGB tuple
         # Brightness is set as percentage in this app
         """
         
-        Log.i(f"Pixel: setColor: R:{RR}, G:{GG}, B:{BB}")
-        self._lights[0].setBrightness(RR)
-        self._lights[1].setBrightness(GG)
-        self._lights[2].setBrightness(BB)
+        Log.i(f"Pixel: setColor: {color}")
+        self._lights[0].setBrightness(color[0])
+        self._lights[1].setBrightness(color[1])
+        self._lights[2].setBrightness(color[2])
                 
     def run(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
         self._running = True
 
-        colors = [[255,0,0], [255,165,0], [255,255,0], [0,128,0],[0,0,255],[75,0,130],[238,130,238]]
+        colors = [(255,0,0), (255,165,0), (255,255,0), (0,128,0),(0,0,255),(75,0,130),(238,130,238)]
         Log.i("Pixel - run - rainbow demo")
         for c in colors:
             if not self._running:
                 break
-            self.setColor(c[0],c[1],c[2])
+            self.setColor(c)
             sleep_ms(delay)        
         self._running = False
