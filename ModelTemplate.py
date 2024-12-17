@@ -115,6 +115,31 @@ class MyControllerTemplate:
             pass
         # etc.
     
+    def stateEvent(self, state, event)->bool:
+        """
+        stateEvent - handler for performing actions for a specific event
+        without leaving the current state. 
+        Note that transitions take precedence over state events, so if you
+        have a transition as well as an in-state action for the same event,
+        the in-state action will never be called.
+
+        This handler must return True if the event was processed, otherwise
+        must return False.
+        """
+        
+        # Recommend using the debug statement below ONLY if necessary - may
+        # generate a lot of useless debug information.
+        # Log.d(f'State {state} received event {event}')
+        
+        # Handle internal events here - if you need to do something
+        if state == 0 and event == 'button1_press':
+            # do something for button1 press in state 0 wihout transitioning
+            self._timer.cancel()
+            return True
+        
+        # Note the return False if notne of the conditions are met
+        return False
+
     def stateDo(self, state):
         """
         stateDo - the method that handles the do/actions for each state

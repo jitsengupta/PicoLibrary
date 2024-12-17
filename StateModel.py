@@ -19,9 +19,14 @@ class StateModel:
     with the event code that caused it. stateDo only receives the current
     state.
     
-        stateEntered(state, event)
-        stateLeft(state, event)
-        stateDo(state)
+        stateEntered(state, event) : perform entry actions for the state
+        stateLeft(state, event)    : perform exit actions for the state
+        stateEvent(state, event)   : perform in-state event response 
+        stateDo(state)             : perform a single loop of state activity
+
+    Note that state transitions take precedence over in-state events. So try to
+    ensure that you don't have the same event causing a transition as well as an in-state
+    event, since the in-state event will never be called.
 
     Currently the following types of events are supported.
     
@@ -196,7 +201,8 @@ class StateModel:
             else:
                 if self._debug:
                     if event != "no_event":
-                        Log.d(f"Ignoring event {event}")
+                        if not self._handler.stateEvent(self._curState, event):
+                            Log.d(f"Ignoring event {event}")                    
         else:
             raise ValueError(f"Invalid event {event}")
 
@@ -292,4 +298,3 @@ class StateModel:
         
         eventname = f'{name}_timeout'
         self.processEvent(eventname)
-
