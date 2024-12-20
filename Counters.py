@@ -100,6 +100,7 @@ class TimeKeeper(Counter):
         
         super().reset()
         self._starttime = time.ticks_ms()
+        self._running = False
 
     def elapsed_time(self, format='sec'):
         """
