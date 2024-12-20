@@ -105,8 +105,10 @@ class TimeKeeper(Counter):
         """
         Get the elapsed time in seconds (default) or ms by passing format='ms'
         """
-
-        ms = time.ticks_diff(time.ticks_ms(),self._starttime)
+        if self._running:
+            ms = self._count + time.ticks_diff(time.ticks_ms(),self._starttime)
+        else:
+            ms = self._count
         if format == 'ms':
             return ms
         else:
