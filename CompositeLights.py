@@ -25,7 +25,7 @@ class CompositeLight:
         self._lights = []
         self._running = False
         
-    def run(self):
+    def operate(self):
         """
         # Technically this is an abstract method but Python does not
         # correctly support it, so just an empty shell
@@ -76,7 +76,7 @@ class TrafficLight(CompositeLight):
     passed in
     """
     
-    def __init__(self, gpin, ypin, rpin):
+    def __init__(self, rpin, ypin, gpin):
         """
         # Traffic light constructor
         # Add the green, yellow and red lights to the array
@@ -85,9 +85,11 @@ class TrafficLight(CompositeLight):
         
         Log.i("TrafficLight constructor: add the lights in order")
         super().__init__()
-        self._lights.append(Light(gpin,'green'))
-        self._lights.append(Light(ypin, 'yellow'))
         self._lights.append(Light(rpin, 'red'))
+        self._lights.append(Light(ypin, 'yellow'))
+        self._lights.append(Light(gpin,'green'))
+        self._running = False
+        self.stop()
     
     def go(self):
         Log.i("Trafficlight - go/green")
@@ -101,28 +103,26 @@ class TrafficLight(CompositeLight):
         Log.i("Trafficlight - stop/red")
         self.singleOn(2)
 
-    def run(self):
+    def operate(self, gtime = 3, ytime = 0.5, rtime = 1.5):
         """
-        # The run method - just runs the cycle once, showing
+        # The operate method - just runs the cycle once, showing
         # Green, yellow then red, and going back to Green
         """
         
-        super().run()
+        super().operate()
         Log.i("TrafficLight: Run a simple Green-yellow-red sequence")
         if (self._running):
             self.go()
         if (self._running):
-            sleep(3)
+            sleep(gtime)
         if (self._running):
             self.caution()  
         if (self._running):
-            sleep(0.5)
+            sleep(ytime)
         if (self._running):
             self.stop()
         if (self._running):
-            sleep(1.5)
-        if (self._running):
-            self.go()
+            sleep(rtime)
 
 class Pixel(CompositeLight):
     """
@@ -169,7 +169,7 @@ class Pixel(CompositeLight):
         self._lights[1].setBrightness(color[1])
         self._lights[2].setBrightness(color[2])
                 
-    def run(self, delay=250):
+    def operate(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
         self._running = True
 
