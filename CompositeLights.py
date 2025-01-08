@@ -106,7 +106,7 @@ class TrafficLight(CompositeLight):
     def operate(self, gtime = 3, ytime = 0.5, rtime = 1.5):
         """
         # The operate method - just runs the cycle once, showing
-        # Green, yellow then red, and going back to Green
+        # Green, yellow then red
         """
         
         super().operate()
