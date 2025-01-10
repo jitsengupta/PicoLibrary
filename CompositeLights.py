@@ -93,7 +93,7 @@ class TrafficLight(CompositeLight):
     
     def go(self):
         Log.i("Trafficlight - go/green")
-        self.singleOn(0)
+        self.singleOn(2)
     
     def caution(self):
         Log.i("Trafficlight - caution/yellow")
@@ -101,7 +101,7 @@ class TrafficLight(CompositeLight):
 
     def stop(self):
         Log.i("Trafficlight - stop/red")
-        self.singleOn(2)
+        self.singleOn(0)
 
     def operate(self, gtime = 3, ytime = 0.5, rtime = 1.5):
         """
