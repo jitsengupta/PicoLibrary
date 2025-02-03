@@ -160,17 +160,50 @@ class Servo(Motor):
         else:
             self.setAngle(self._curPos + angle)
         
+class CoolingFan(Motor):
+    """
+    A simple DC Motor that only needs a PWM line to control speed.
+    Typically CPU cooling fans that come with 3 pins with an internal
+    driver. Connect Red and Black to power, and data pin to any GPIO
+    pin on the Pico.
+    """
+    def __init__(self, enable_pin = 0, name="Fan", min_duty=0, max_duty=65535):
+        super().__init__(enable_pin, name)
+        self.enable_pin = PWM(Pin(enable_pin))
+        self.enable_pin.freq(1000)
+        self.min_duty = min_duty
+        self.max_duty = max_duty
+    
+    def run(self, speed):
+        Log.i(f"Running fan {self._name} at speed {speed}")
+        self.speed = speed
+        self.enable_pin.duty_u16(self.duty_cycle(self.speed))
+        
+    def stop(self):
+        Log.i(f"Stopping fan {self._name}")
+        self.run(0)
+        
+    def duty_cycle(self, speed):
+        if speed <= 0 or speed > 100:
+            duty_cycle = 0
+        else:
+            duty_cycle = int(self.min_duty + (self.max_duty - self.min_duty) * (speed / 100))
+        return duty_cycle
+    
 # Rui Santos & Sara Santos - Random Nerd Tutorials
 # Complete project details at https://RandomNerdTutorials.com/raspberry-pi-pico-dc-motor-micropython/
 
-class DCMotor(Motor):
+class DCMotor(CoolingFan):
+    """
+    Implements a standard DC motor with 2 pins that can be controlled
+    for bidirectional controllable velocities.
+    Needs to use a driver chip like L293N or L298N to function correctly.
+    """
+    
     def __init__(self, enable_pin = 0, name="DCMotor", forward_pin = 1, backward_pin=2, min_duty=15000, max_duty=65535):
-        super().__init__(enable_pin, name)
+        super().__init__(enable_pin, name, min_duty, max_duty)
         self.pin1 = Pin(forward_pin, Pin.OUT)
         self.pin2 = Pin(backward_pin, Pin.OUT)
-        self.enable_pin = PWM(Pin(enable_pin), 1000)
-        self.min_duty = min_duty
-        self.max_duty = max_duty
 
     def forward(self, speed=100):
         """ Spin motor forward at a percent speed (max:100)"""
@@ -198,13 +231,6 @@ class DCMotor(Motor):
         self.pin1.value(0)
         self.pin2.value(0)
 
-    def duty_cycle(self, speed):
-        if speed <= 0 or speed > 100:
-            duty_cycle = 0
-        else:
-            duty_cycle = int(self.min_duty + (self.max_duty - self.min_duty) * (speed / 100))
-        return duty_cycle
-    
 if __name__ == '__main__':
     m = DCMotor(enable_pin=13, forward_pin=14,backward_pin=15)
     while True:
@@ -224,3 +250,4 @@ if __name__ == '__main__':
         # stop for a bit
         m.stop()
         sleep(1)
+        
