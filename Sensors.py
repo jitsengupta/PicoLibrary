@@ -6,10 +6,11 @@
 # Author: Arijit Sengupta
 """
 
-from machine import Pin, ADC
 import utime
 import math
 import dht
+from machine import Pin, ADC
+from collections import namedtuple
 from mpu6050 import *
 from Log import *
 
@@ -238,6 +239,8 @@ class UltrasonicSensor(Sensor):
         else:
             return False
 
+DHTData = namedtuple('DHTData', ('temperature', 'humidity'))
+
 # DHT11/DHT22 Sensor
 class DHTSensor(DigitalSensor, TemperatureSensor):
     def __init__(self, pin, name='DHT', lowActive=False, threshold=30, poll_delay=2000, sensor_type='DHT11'):
@@ -270,10 +273,7 @@ class DHTSensor(DigitalSensor, TemperatureSensor):
         Return the temperature of the sensor
         """
         
-        if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
-            self._dht_sensor.measure()
-        self._last_poll_time = utime.ticks_ms()
-        t = self._dht_sensor.temperature()
+        (t, h) = self.rawValue()
 
         if unit == 'C':
             return t
@@ -288,10 +288,8 @@ class DHTSensor(DigitalSensor, TemperatureSensor):
         Return the humidity of the sensor
         """
         
-        if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
-            self._dht_sensor.measure()
-        self._last_poll_time = utime.ticks_ms()
-        return self._dht_sensor.humidity()
+        (t, h) = self.rawValue()
+        return h
 
     def rawValue(self):
         """
@@ -300,8 +298,8 @@ class DHTSensor(DigitalSensor, TemperatureSensor):
         
         if utime.ticks_ms() - self._last_poll_time > self._poll_delay:
             self._dht_sensor.measure()
-        self._last_poll_time = utime.ticks_ms()
-        return (self._dht_sensor.temperature(), self._dht_sensor.humidity())
+            self._last_poll_time = utime.ticks_ms()
+        return (DHTData(self._dht_sensor.temperature(), self._dht_sensor.humidity()))
 
     def tripped(self)->bool:
         """
@@ -309,10 +307,16 @@ class DHTSensor(DigitalSensor, TemperatureSensor):
         """
         
         if self._lowActive:
-            return self.temperature() < self._threshold
+            tripped = self.temperature() < self._threshold
         else:
-            return self.temperature() >= self._threshold
+            tripped = self.temperature() >= self._threshold
         
+        if tripped:
+            Log.i(f"DHT Sensor {self._name}: sensor tripped")
+            
+        return tripped
+        
+MPUData = namedtuple('MPUData', ('acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z', 'temperature'))
 
 # MPU6050 Sensor
 class MPU(Sensor, TemperatureSensor):
@@ -346,6 +350,7 @@ class MPU(Sensor, TemperatureSensor):
         self._i2cid = -1 # lets set an invalid value to start with
         self._sda = sda
         self._scl = scl
+        self._threshold = threshold
 
         if (sda == 0 and scl == 1) or (sda == 4 and scl == 5) or (sda == 8 and scl == 9) or (sda == 12 and scl == 13) or (sda == 16 and scl == 17) or (sda == 20 and scl == 21):    
             self._i2cid = 0
@@ -382,8 +387,8 @@ class MPU(Sensor, TemperatureSensor):
         Return the raw data from the sensor
         which is in the form of a named tuple containing both acceleration and gyro data
         """
-
-        return self._mpu.data
+        d = self._mpu.data
+        return MPUData(d[0], d[1], d[2], d[3], d[4], d[5], self._mpu.celsius)
     
     def angles(self):
         """
@@ -398,6 +403,11 @@ class MPU(Sensor, TemperatureSensor):
         """
 
         if self._lowActive:
-            return self.temperature() < self._threshold
+            tripped = self.temperature() < self._threshold
         else:
-            return self.temperature() >= self._threshold
+            tripped = self.temperature() >= self._threshold
+        
+        if tripped:
+            Log.i(f"DHT Sensor {self._name}: sensor tripped")
+            
+        return tripped
