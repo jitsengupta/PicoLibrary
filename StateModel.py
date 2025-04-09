@@ -135,10 +135,10 @@ class StateModel:
         """
         Get the distination for this transition
         """
-
-        for (e,s) in self._transitions[fromState]:
-            if e == event:
-                return s
+        if self._transitions[fromState]:
+            for (e,s) in self._transitions[fromState]:
+                if e == event:
+                    return s
         return -1
         
     
