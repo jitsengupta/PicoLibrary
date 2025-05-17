@@ -61,15 +61,30 @@ class LightStrip(Light):
         self.show()
         Log.i(f'{self._name} flipped')
 
-    def setColor(self, color, numPixels= -1):
-        """ Turn all LEDs up to a set number of pixels to a specific color """
+    def setColor(self, color, numPixels= None):
+        """
+        Turn all LEDs up to a set number of pixels to a specific color
+        Not sending the numPixels Parameter will turn on all pixels
         
-        if numPixels < 0 or numPixels > self._numleds:
+        Sending a negative value will turn on LEDs from the end. This
+        will allow a circular strip to animate from both directions.
+        
+        """
+        
+        if numPixels == None or numPixels < (-1 * self._numleds) or numPixels > self._numleds:
             numPixels = self._numleds
-        for i in range(numPixels):
-            self._set_pixel(i, color)
-        for i in range(numPixels,self._numleds):
-            self._set_pixel(i, BLACK)
+            
+        if numPixels >= 0:
+            for i in range(numPixels):
+                self._set_pixel(i, color)
+            for i in range(numPixels,self._numleds):
+                self._set_pixel(i, BLACK)
+        else:
+            np = abs(numPixels)
+            for i in range(self._numleds-1, self._numleds-np-1, -1):
+                self._set_pixel(i, color)
+            for i in range(0,self._numleds-np):
+                self._set_pixel(i, BLACK)
         self._np.write()
         Log.i(f'{self._name} set color to {color}')
 
