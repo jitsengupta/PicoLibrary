@@ -9,10 +9,7 @@
 import utime
 from machine import Pin, PWM
 from Log import *
-import _thread
 MAX = 65535
-
-baton = _thread.allocate_lock()
 
 class Light:
     """
