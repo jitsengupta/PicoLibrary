@@ -59,6 +59,13 @@ class Light:
             self.off()
             utime.sleep(delay)
 
+    def isOn(self)->bool:
+        """
+        Check to see if the light is on or off
+        """
+
+        return self._led.value() == 1
+
 
 class DimLight(Light):
     """
