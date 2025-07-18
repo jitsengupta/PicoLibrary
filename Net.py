@@ -68,10 +68,10 @@ class Net:
         self._ap = network.WLAN(network.AP_IF)
         self._ap.active(True)
         if password is not None:
-            self._ap.config(essid=ssid, password=password, authmode=network.AUTH_WPA2_PSK)
+            self._ap.config(essid=ssid, password=password)
         else:
-            self._ap.config(essid=ssid, authmode=network.AUTH_OPEN)
-        
+            self._ap.config(essid=ssid, security=0)
+
         Log.i(f'Net: Access Point started with SSID {ssid}')
 
     def getAccessPointInfo(self):
@@ -156,9 +156,10 @@ class Net:
 
     def disconnect(self):
         """ Disconnect from wifi network """
-        self._sta.disconnect()
-        self._sta.active(False)
-        self._sta = None
+        if self._sta:
+            self._sta.disconnect()
+            self._sta.active(False)
+            self._sta = None
         self._ap = None
         
     
@@ -175,7 +176,13 @@ class Net:
             return 'Not connected'
         
     def getMac(self):
-        mac = ubinascii.hexlify(self._sta.config('mac'),':').decode()
+        """ Get the Mac address of the interface being used """
+        
+        mac = None
+        if self._sta:
+            mac = ubinascii.hexlify(self._sta.config('mac'),':').decode()
+        elif self._ap:
+            mac = ubinascii.hexlify(self._ap.config('mac'),':').decode()
         return mac
         
     def updateTime(self, timezone = 'America/New_York'):
