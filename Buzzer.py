@@ -224,3 +224,35 @@ SO = tones['G4']
 LA = tones['A4']
 TI = tones['B4']
 DO2 = tones['C5']
+
+
+### The following code is for testing purposes only
+### To use this code, add an Active Buzzer on Pin 14
+### and a Passive Buzzer on Pin 15 Then run the module directly
+
+if __name__ == "__main__":
+    Log.i("Testing Active Buzzer")
+    active_buzzer = ActiveBuzzer(14, "TestActiveBuzzer")
+    active_buzzer.play()
+    time.sleep(1)
+    active_buzzer.stop()
+    
+    Log.i("Testing Passive Buzzer")
+
+    buzzer = PassiveBuzzer(15, "TestBuzzer")
+    buzzer.play(DO)
+    time.sleep(1)
+    buzzer.stop()
+    
+    buzzer.setVolume(5)
+    buzzer.play(RE)
+    time.sleep(1)
+    buzzer.stop()
+    
+    buzzer.setVolume(0)
+    buzzer.play(MI)  # Should not sound
+    time.sleep(1)
+    buzzer.stop()
+    
+    buzzer.setVolume(10)
+    buzzer.beep(tone=FA, duration=500)  # Beep for 500 ms
