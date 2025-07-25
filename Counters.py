@@ -249,3 +249,63 @@ class Time:
         
         RTC().datetime((tm[0], tm[1], tm[2], 0, tm[3], tm[4], tm[5], 0))
     
+## The following code is for testing purposes only
+if __name__ == "__main__":
+    # Create a counter and increment it
+    counter = UpDownCounter('Test Counter', 0, 10)
+    print(counter)
+    counter.up(5)
+    print(counter)
+    counter.down(2)
+    print(counter)
+
+    # Create a timekeeper and start it
+    timekeeper = TimeKeeper('Test Timekeeper')
+    timekeeper.start()
+    time.sleep(2)  # wait for 2 seconds
+    print(timekeeper)
+    
+    # Stop the timekeeper and print elapsed time
+    timekeeper.stop()
+    print(f"Elapsed time: {timekeeper.elapsed_time()} seconds")
+
+    # Reset the timekeeper and print it
+    timekeeper.reset()
+    print(timekeeper)
+    # Create a hardware timer and start it
+    class MyHandler:
+        def timeout(self, name):
+            print(f"Handler: Timer {name} is up")
+
+    # Create a hardware timer and start it
+    hardware_timer = HardwareTimer('Test Hardware Timer', MyHandler())
+    hardware_timer.start(5)
+    time.sleep(6)  # wait for 6 seconds to ensure the timer goes off
+    
+    # Just to be sure, cancel the hardware timer
+    hardware_timer.cancel()
+    print("Hardware timer cancelled")
+
+    # Create a software timer and start it
+    software_timer = SoftwareTimer('Test Software Timer', MyHandler())
+    software_timer.start(5)
+    time.sleep(6)  # wait for 6 seconds to ensure the timer goes off
+    # Check the software timer
+    software_timer.check()
+    # Cancel the software timer
+    software_timer.cancel()
+    print("Software timer cancelled")
+    # Check the software timer again
+    software_timer.check()
+
+    # Get and set the time
+    current_time = Time.getTime()
+    print(f"Current time: {current_time}")
+    new_time = (2023, 10, 1, 12, 0, 0, 0, 0)  # Set to Oct 1, 2023, 12:00:00
+    Time.setTime(new_time)
+    print(f"Time set to: {new_time}")
+
+    time.sleep(2)  # wait for 2 seconds to ensure the time is set
+    # verify that the time was set
+    current_time = Time.getTime()
+    print(f"New current time: {current_time}")
