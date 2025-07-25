@@ -92,7 +92,7 @@ class Joystick(Button):
     # Some constants to store some basic conditions
     LOW = 0
     HIGH = 65535
-    MID = 32760
+    MID = 47000
 
     # Joystick status codes
     CENTER = 0
@@ -135,9 +135,9 @@ class Joystick(Button):
         (x,y) = self.getData()
 
         if x < self.LOW + self._delta:
-            return self.RIGHT
-        if x > self.HIGH - self._delta:
             return self.LEFT
+        if x > self.HIGH - self._delta:
+            return self.RIGHT
         if y < self.LOW + self._delta:
             return self.DOWN
         if y > self.HIGH - self._delta:
@@ -153,3 +153,45 @@ class Joystick(Button):
         """
     
         return Joystick.statuscodes[self.getStatusCode()]
+
+# Example usage
+# This part is for testing the Button and Joystick classes
+# Connect the button to pin 15 and joystick to pins 26, 27, 28
+# Then run this module directly to see and verify the output
+if __name__ == "__main__":
+    class MyHandler:
+        def buttonPressed(self, name):
+            print(f"Handler: Button {name} pressed")
+
+        def buttonReleased(self, name):
+            print(f"Handler: Button {name} released")
+
+    # Create a button and a joystick
+    button = Button(15, "TestButton", handler=MyHandler())
+    joystick = Joystick(26, 27, 28, "TestJoystick", handler=MyHandler())
+
+    # Test the button
+    button.isPressed()
+    
+    # Test the joystick
+    print(f"Joystick status: {joystick.getStatus()}")
+    print(f"Joystick status code: {joystick.getStatusCode()}") 
+
+    # Run until interrupted
+    joystickstatus = joystick.getStatus()
+    Log.i(f"Joystick initial status: {joystick.getStatus()}")
+    try:
+        while True:
+            print(f"Joystick data: {joystick.getData()}")
+            newstatus = joystick.getStatus()
+            if newstatus != joystickstatus:
+                Log.i(f"Joystick status changed from {joystickstatus} to {newstatus}")
+                joystickstatus = newstatus
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Exiting...")
+        pass
+        Log.i("Program terminated by user")
+        button.setHandler(None)  # Remove the handler to clean up
+        joystick.setHandler(None)  # Remove the handler to clean up
+        Log.i("Handlers removed, cleanup complete")

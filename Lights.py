@@ -6,7 +6,7 @@
 # Author: Arijit Sengupta
 """
 
-import utime
+import time
 from machine import Pin, PWM
 from Log import *
 MAX = 65535
@@ -55,9 +55,9 @@ class Light:
         Log.i(f"Light: Blink {self._name} {times} times for {delay} sec")
         for x in range(0,times):
             self.on()
-            utime.sleep(delay)
+            time.sleep(delay)
             self.off()
-            utime.sleep(delay)
+            time.sleep(delay)
 
     def isOn(self)->bool:
         """
@@ -136,12 +136,38 @@ class DimLight(Light):
                 break
             dc += 10
             self.setBrightness(dc)
-            utime.sleep_ms(100)
+            time.sleep_ms(100)
 
         for i in range (0, 25):
             if not self._running:
                 break
             dc -= 10
             self.setBrightness(dc)
-            utime.sleep_ms(100)
+            time.sleep_ms(100)
         self._running = False
+
+## The following code is for testing purposes only
+if __name__ == "__main__":
+    # Create a light and turn it on
+    light = Light('LED', "Test Light")
+    print(light)
+    light.on()
+    time.sleep(1)
+    light.off()
+
+    # Create a dimmable light and set brightness
+    dim_light = DimLight(3, "Test Dim Light")
+    print(dim_light)
+    dim_light.on()
+    time.sleep(1)
+    dim_light.setBrightness(128)
+    time.sleep(1)
+    dim_light.off()
+
+    # Test updown functionality
+    dim_light.upDown()
+    
+    # Turn off the lights
+    light.off()
+    dim_light.off()
+    Log.i("Testing complete - all lights turned off")

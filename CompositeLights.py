@@ -181,3 +181,21 @@ class Pixel(CompositeLight):
             self.setColor(c)
             sleep_ms(delay)        
         self._running = False
+
+
+### The following code is for testing purposes only
+if __name__ == "__main__":
+    # Create a traffic light and run it
+    traffic_light = TrafficLight(6, 7, 8)
+    print(traffic_light)
+    traffic_light.operate()
+
+    # Create a pixel and run it
+    pixel = Pixel(3, 4, 5)
+    print(pixel)
+    pixel.operate()
+    
+    # Turn off the lights
+    traffic_light.off()
+    pixel.off()
+    Log.i("Testing complete - all lights turned off")
