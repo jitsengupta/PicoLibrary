@@ -97,3 +97,32 @@ class LCDLevel(LevelDisplay):
         if self._curlevel < 8:
             self._display.showText(' '*(8-self._curlevel),row, col+self._curlevel)
 
+"""
+Example usage of the LevelDisplay classes
+This part is not executed when the module is imported, but can be used for testing.
+"""
+if __name__ == "__main__":
+    # The Log class is not great at showing special characters so
+    # we set the log level to NONE to avoid cluttering the output
+    Log.level = NONE
+    # Test the LevelDisplay classes
+    from LightStrip import LightStrip
+    from Displays import LCDDisplay
+    
+    # Create a light strip with 10 LEDs
+    strip = LightStrip(pin=2, numleds=8, brightness=0.5)
+    light_display = LightStripLevel(strip)
+    
+    # Create an LCD display
+    lcd = LCDDisplay(sda=0, scl=1)  # Change to your I2C pins
+    lcd_display = LCDLevel(lcd)
+    lcd.showText('Level:', 0, 0)
+
+    for i in range(0, 101, 10):
+        print(f"Showing level {i}%")
+        light_display.showLevel(i)
+        lcd_display.showLevel(i, row=1, col=3)
+        time.sleep(1)
+
+    lcd.clear()
+    strip.off()

@@ -411,3 +411,25 @@ class MPU(Sensor, TemperatureSensor):
             Log.i(f"DHT Sensor {self._name}: sensor tripped")
             
         return tripped
+
+"""
+Example usage of the Sensors
+This part is not executed when the module is imported, but can be used for testing.
+"""
+if __name__ == "__main__":
+    # Test the Sensors
+    # A digital sensor connected to pin 11
+    import time
+    
+    while True:
+        digital_sensor = DigitalSensor(pin=11, name='Test Digital Sensor')
+        print(f"Digital Sensor {digital_sensor._name} raw value: {digital_sensor.rawValue()}")
+        print(f"Digital Sensor {digital_sensor._name} tripped: {digital_sensor.tripped()}")
+        
+        # An analog sensor connected to pin 27
+        analog_sensor = AnalogSensor(pin=27, name='Test Analog Sensor', lowActive=True, threshold=30000)
+        print(f"Analog Sensor {analog_sensor._name} raw value: {analog_sensor.rawValue()}")
+        print(f"Analog Sensor {analog_sensor._name} tripped: {analog_sensor.tripped()}")
+
+        time.sleep(1)
+

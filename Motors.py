@@ -244,23 +244,22 @@ class DCMotor(CoolingFan):
         if self.pin2 is not None:
             self.pin2.value(0)
 
-if __name__ == '__main__':
-    m = DCMotor(enable_pin=13, forward_pin=14,backward_pin=15)
-    while True:
-        # Start up slow to full speed
-        for x in range(20,110,10):
-            m.forward(x)
-            sleep(0.5)
         
-        # stop for a bit
-        m.stop()
+"""
+A simple test for the motors
+This part is not executed when the module is imported, but can be used for testing.
+"""
+if __name__ == "__main__":
+    # Test the Motor classes
+    Log.level = NONE
+    m = Servo(pin=9, name='Test Servo')
+
+    for angle in range(0, 181, 30):
+        m.setAngle(angle)
         sleep(1)
-        # reverse slow to full speed
-        for x in range(20,110,10):
-            m.backwards(x)
-            sleep(0.5)
-        
-        # stop for a bit
-        m.stop()
-        sleep(1)
-        
+
+    m.rotate(-90)
+    sleep(1)
+
+    m.rotate(180)
+    sleep(1)
