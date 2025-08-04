@@ -207,3 +207,21 @@ class LCDDisplay(Display):
                 self._lcd.putchar(curst[c-1])
             time.sleep(speed/1000)
         self._working = False
+
+"""
+Example usage of the LCDDisplay class
+This part is not executed when the module is imported, but can be used for testing.
+"""
+if __name__ == "__main__":
+    # Test the LCDDisplay class
+    try:
+        lcd = LCDDisplay(sda=0, scl=1)  # Change to your I2C pins
+        lcd.showText("Hello World", 0, 0)
+        time.sleep(2)
+        lcd.showNumber(1234, 1, 0)
+        time.sleep(2)
+        lcd.scroll("Scrolling Text Example", 0, speed=100, skip=2)
+        time.sleep(2)
+        lcd.clear()
+    except Exception as e:
+        Log.e(f"Error: {e}")
