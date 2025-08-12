@@ -110,7 +110,18 @@ class LightStrip(Light):
         self._np.write()
         
     def setBrightness(self, brightness=0.5):
-        """ Change the brightness of the pixel 0-1 range """
+        """ 
+        Change the brightness of the pixel 0-1 range 
+        Note that this does not change the actual brightness of the
+        LEDs, but only the brightness of the colors sent to the LEDs.
+        This means that the colors will be dimmed, but the LEDs will
+        still be on at full brightness.
+
+        Also, changing the brightness will not change the current
+        color of the LEDs, but only the colors sent to the LEDs in
+        the future. If you want to change the current color, you
+        need to call setColor or setPixel again.
+        """
         
         self._brightness = brightness
         Log.i(f'{self._name} set brightness to {brightness}')

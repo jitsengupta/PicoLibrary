@@ -59,12 +59,13 @@ class PassiveBuzzer(Buzzer):
     to play tones. The tone is controlled by the frequency of the PWM, and the volume level
     is controlled by the duty cycle. Setting duty cycle to 0 stops sound.
     """
+    MAX = 32767  # Max value for duty cycle
     
     def __init__(self, pin, name='Buzzer'):
         Log.i("PassiveBuzzer: constructor")
         super().__init__(pin, name)
         self._buz = PWM(Pin(pin))
-        self._volume = 5
+        self._volume = 0.5  # Default volume is half
         self._playing = False
         self.stop()
 
@@ -73,7 +74,7 @@ class PassiveBuzzer(Buzzer):
         
         Log.i(f"{self._name}: playing tone {tone}")
         self._buz.freq(tone)
-        self._buz.duty_u16(self._volume * 100)
+        self._buz.duty_u16(int(self._volume * self.MAX))
         self._playing = True
 
     def stop(self):
@@ -83,13 +84,21 @@ class PassiveBuzzer(Buzzer):
         self._buz.duty_u16(0)
         self._playing = False
 
-    def setVolume(self, volume=5):
-        """ Change the volume of the sound currently playing and future plays """
+    def setVolume(self, volume=0.5):
+        """ 
+        Change the volume of the sound currently playing and future plays.
+        Volume is between 0 and 1.
+
+        Volume 0 is silent, volume 1 is max volume. Note that this is not a linear
+        and towards the lower end, the sound drops off quickly. At the higher end,
+        the sound increases slowly, and might only be noticeable when volume is
+        set to max.
+        """
         
         Log.i(f"{self._name}: changing volume to {volume}")
         self._volume = volume
         if (self._playing):
-            self._buz.duty_u16(self._volume * 100)
+            self._buz.duty_u16(int(self._volume * self.MAX))
 
 # Known tones from https://github.com/james1236/buzzer_music
 tones = {
@@ -239,12 +248,12 @@ if __name__ == "__main__":
     
     Log.i("Testing Passive Buzzer")
 
-    buzzer = PassiveBuzzer(15, "TestBuzzer")
+    buzzer = PassiveBuzzer(16, "TestBuzzer")
     buzzer.play(DO)
     time.sleep(1)
     buzzer.stop()
     
-    buzzer.setVolume(5)
+    buzzer.setVolume(0.2)
     buzzer.play(RE)
     time.sleep(1)
     buzzer.stop()
@@ -254,5 +263,19 @@ if __name__ == "__main__":
     time.sleep(1)
     buzzer.stop()
     
-    buzzer.setVolume(10)
-    buzzer.beep(tone=FA, duration=500)  # Beep for 500 ms
+    # Test volume change
+    Log.i("Testing volume change")
+    for v in range(0, 11):
+        buzzer.setVolume(v / 10)
+        buzzer.play(FA)
+        time.sleep(0.5)
+   
+    # Play do re mi
+    Log.i("Playing Do Re Mi")
+    buzzer.setVolume(0.5)
+
+    for note in [DO, RE, MI, FA, SO, LA, TI, DO2]:
+        buzzer.play(note)
+        time.sleep(0.5)
+
+    buzzer.stop()

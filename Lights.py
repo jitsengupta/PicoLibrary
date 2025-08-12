@@ -89,7 +89,7 @@ class DimLight(Light):
         self._running = False
         self._onState = True
         Log.i(f"Dimlight: turn Light {self._name} on (full brightness)")
-        self.setBrightness(MAX)
+        self.setBrightness(1)
 
     def off(self):
         """  Turn off - set brightness to 0 """
@@ -109,15 +109,15 @@ class DimLight(Light):
             self.on()       
         
     def setBrightness(self, brightness):
-        """ Set brightness to a specific level 0-255 """
+        """ Set brightness to a specific level 0-1 """
 
         Log.i(f"Dimlight: setting Light {self._name} brightness to {brightness}")
-        if (brightness == MAX):
+        if (brightness == 1):
             self._pwm.duty_u16(MAX)
         else:
-            self._pwm.duty_u16(brightness * brightness)
-        
-        if brightness < 50:
+            self._pwm.duty_u16(int(MAX * brightness))
+
+        if brightness < 0.05:
             self._onState = False
         else:
             self._onState = True
@@ -131,17 +131,19 @@ class DimLight(Light):
         Log.i(f"Dimlight: do an up-down demo on Light {self._name}")
         self._running = True
         dc = 0
-        for i in range (0, 25):
+        for i in range (0, 10):
             if not self._running:
                 break
-            dc += 10
+            dc += 0.1
             self.setBrightness(dc)
             time.sleep_ms(100)
 
-        for i in range (0, 25):
+        for i in range (0, 10):
             if not self._running:
                 break
-            dc -= 10
+            dc -= 0.1
+            if dc < 0:
+                dc = 0
             self.setBrightness(dc)
             time.sleep_ms(100)
         self._running = False
@@ -160,7 +162,7 @@ if __name__ == "__main__":
     print(dim_light)
     dim_light.on()
     time.sleep(1)
-    dim_light.setBrightness(128)
+    dim_light.setBrightness(0.5)  # Set brightness to 50%
     time.sleep(1)
     dim_light.off()
 
