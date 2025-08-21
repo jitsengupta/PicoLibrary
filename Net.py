@@ -488,3 +488,8 @@ class WebServer:
         except Exception as e:
             Log.e(e)
             return {}
+
+if __name__ == "__main__":
+    net = Net()
+    net.startAccessPoint("PicoAP", "micropythoN")
+    Log.i(net.getAccessPointInfo())

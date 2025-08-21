@@ -16,7 +16,7 @@ Original full license is included below.
 # MicroPython Class used to control playing a WAV file or a generated tone
 # using an I2S amplifier or DAC module
 # - control playback with 5 methods:
-#     - play() / playTone()
+#     - playWav() / play() or playTone()
 #     - pause()
 #     - resume()
 #     - stop()
@@ -24,11 +24,13 @@ Original full license is included below.
 #
 # Example (WAV):
 #    wp = SoundPlayer(...)
-#    wp.play("YOUR_WAV_FILE.wav", loop=True)
+#    wp.playWav("YOUR_WAV_FILE.wav", loop=True)
 #
 # Example (Tone):
 #    wp = SoundPlayer(...)
-#    wp.playTone(frequency=440, duration_ms=-1) # Play 440Hz indefinitely
+#    wp.play(tone=500)  # Play 500Hz indefinitely
+#    OR use more options with playTone
+#    wp.playTone(tone=440, duration_ms=-1) # Play 440Hz indefinitely
 #
 # All methods are non-blocking.
 
@@ -37,8 +39,9 @@ import struct
 import math
 from machine import I2S, Pin
 from Log import *
+from Buzzer import *
 
-class SoundPlayer:
+class SoundPlayer(PassiveBuzzer):
     """
     A SoundPlayer class capable of playing mono and stereo wav files
     up to 16 bits and 16k from flash or SDCard, as well as playing
@@ -65,15 +68,21 @@ class SoundPlayer:
     _DEFAULT_TONE_BITS_PER_SAMPLE = 16
     _DEFAULT_TONE_FORMAT = I2S.MONO
 
-    def __init__(self, id, sck_pin, ws_pin, sd_pin, ibuf=1000, root="/"):
+    def __init__(self, name='SoundPlayer', sd_pin=18, sck_pin=16, ws_pin=17, id=0, ibuf=1000, root="/"):
         """
         Initialize the player. Provide the correct pins.
         Note that sd_pin has to be adjacent to the ws_pin (+1)
         
         Also, on the Raspberry Pi Pico, the sck pin needs to be connected to ground
-        use the bck pin as sck_pin, din and lck as ws_pin and sd_pin respectively
+        use the bck pin as the sck_pin parameter, and
+        din and lck as ws_pin and sd_pin respectively
         """
-        
+
+        #Although we are subclassing PassiveBuzzer we don't want to set up
+        # the PWM, so instead of calling super().__init__(), we only set the name
+        self.name = name
+
+        # Set the rest of the parameters
         self.id = id
         self.sck_pin = sck_pin
         self.ws_pin = ws_pin
@@ -114,10 +123,10 @@ class SoundPlayer:
         self.samples_mv = memoryview(bytearray(self._chunk_buffer_size))
 
         # Initialize volume control variable (0.0 to 1.0)
-        self.volume = 1.0
+        self._volume = 1.0
         self.volume_int = 256  # 256 corresponds to 1.0 in fixed-point representation
 
-    def setVolume(self, volume):
+    def setVolume(self, volume=0.5):
         """
         Change the volume of playback. volume is between 0.0 and 1.0
         Note that changing volume while a wav is playing might reset
@@ -125,12 +134,12 @@ class SoundPlayer:
         """
         
         if 0 <= volume <= 1:
-            self.volume = volume
+            self._volume = volume
             self.volume_int = int(volume * 256)  # Scale to 0-256
         else:
             raise ValueError("Volume must be between 0.0 and 1.0")
 
-    def play(self, wav_file_path, loop=False):
+    def playWav(self, wav_file_path, loop=False):
         """
         Plays a WAV file.
         If playback is already active (playing or paused), it will be
@@ -187,8 +196,18 @@ class SoundPlayer:
             self._playback_type = SoundPlayer._TYPE_NONE
             raise # Re-raise the exception
 
+    def play(self, tone=500):
+        """
+        Play a tone. This will play the specified tone indefinitely.
+        Essentially to override the default behavior of play() from
+        the PassiveBuzzer class.
 
-    def playTone(self, frequency, duration_ms=-1,
+        To get more control of the tone playback, you can use the playTone() method.
+        """
+
+        self.playTone(tone=tone, duration_ms=-1)
+
+    def playTone(self, tone=440, duration_ms=-1,
                   sample_rate=_DEFAULT_TONE_SAMPLE_RATE,
                   bits_per_sample=_DEFAULT_TONE_BITS_PER_SAMPLE,
                   format=_DEFAULT_TONE_FORMAT):
@@ -197,6 +216,7 @@ class SoundPlayer:
         If playback is already active (playing or paused), it will be
         stopped cleanly before the new tone starts.
         """
+        
         # If already playing or paused, stop the current playback first
         if self.state != SoundPlayer.STOP:
             Log.d("Playback active, stopping current sound...")
@@ -217,7 +237,7 @@ class SoundPlayer:
         self.loop = False # Loop concept doesn't apply directly, duration handles it
 
         try:
-            self._make_tone(self.sample_rate, self.bits_per_sample, frequency)
+            self._make_tone(self.sample_rate, self.bits_per_sample, tone)
             self._playback_type = SoundPlayer._TYPE_TONE
             self._tone_buffer_offset = 0
             self._tone_samples_played = 0
@@ -540,9 +560,9 @@ class SoundPlayer:
         Log.i(f"Configuring I2S: rate={self.sample_rate}, bits={self.bits_per_sample}, format={('MONO' if self.format == I2S.MONO else 'STEREO')}")
         self.audio_out = I2S(
             self.id,
-            sck=self.sck_pin,
-            ws=self.ws_pin,
-            sd=self.sd_pin,
+            sck=Pin(self.sck_pin),
+            ws=Pin(self.ws_pin),
+            sd=Pin(self.sd_pin),
             mode=I2S.TX,
             bits=self.bits_per_sample,
             format=self.format,
@@ -589,3 +609,38 @@ class SoundPlayer:
         self._tone_buffer_offset = 0
         self._tone_samples_played = 0
         self._tone_total_samples_to_play = 0
+
+if __name__ == "__main__":
+    # Simple test code (requires appropriate hardware setup)
+    from machine import Pin
+    import time
+
+    # Example pin configuration for Raspberry Pi Pico
+    SCK_PIN = 16  # BCK
+    WS_PIN = 17   # LCK
+    SD_PIN = 18   # DIN (must be WS_PIN + 1)
+
+    player = SoundPlayer(id=0, sck_pin=SCK_PIN, ws_pin=WS_PIN, sd_pin=SD_PIN, ibuf=2000, root="/")
+
+    try:
+        # Test playing a tone
+        player.setVolume(0.0)
+        player.play(tone=440, duration_ms=5000)  # Play A4 for 5 seconds
+        time.sleep(6)  # Wait to ensure tone finishes
+        player.stop()  # Stop the tone, just in case
+
+        # Test playing a WAV file
+        player.setVolume(0.1)
+        player.playWav("test.wav", loop=True)
+        time.sleep(5)  # Let it play for 5 seconds
+        player.pause()
+        time.sleep(2)  # Pause for 2 seconds
+        player.resume()
+        time.sleep(5)  # Play for another 5 seconds
+        player.stop()
+
+    except Exception as e:
+        Log.e(f"Error during playback test: {e}")
+
+    finally:
+        player.stop()   
