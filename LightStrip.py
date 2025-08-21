@@ -196,17 +196,16 @@ class LightStrip(Light):
             self._np.write()
             time.sleep(wait)
 
-
-# Some color definitions
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-ORANGE = (255, 140, 0)
-YELLOW = (255, 200, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-PURPLE = (180, 0, 255)
-CYAN = (0, 255, 255)
-INDIGO = (75, 0, 130)
-WHITE = (255, 255, 255)
-COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE, ORANGE)
-
+if __name__== '__main__':
+    ls = LightStrip(pin=2, name='Lightring', numleds=8, brightness=0.5)
+    ls.on()
+    time.sleep(1)
+    ls.off()
+    time.sleep(1)
+    ls.run(0)
+    time.sleep(1)
+    ls.run(1)
+    time.sleep(1)
+    ls.run(2)
+    time.sleep(0.5)
+    ls.off()

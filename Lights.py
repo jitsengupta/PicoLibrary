@@ -11,6 +11,21 @@ from machine import Pin, PWM
 from Log import *
 MAX = 65535
 
+# Some color definitions - shared by DimLight and LightStrip
+# May eventually move to a separate module
+
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+ORANGE = (255, 140, 0)
+YELLOW = (255, 200, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+PURPLE = (180, 0, 255)
+CYAN = (0, 255, 255)
+INDIGO = (75, 0, 130)
+WHITE = (255, 255, 255)
+COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE, ORANGE)
+
 class Light:
     """
     The Light base class - just an LED controlled by a digital IO

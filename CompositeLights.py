@@ -165,9 +165,14 @@ class Pixel(CompositeLight):
         """
         
         Log.i(f"Pixel: setColor: {color}")
-        self._lights[0].setBrightness(color[0])
-        self._lights[1].setBrightness(color[1])
-        self._lights[2].setBrightness(color[2])
+        if self._commoncathode:
+            self._lights[0].setBrightness(color[0])
+            self._lights[1].setBrightness(color[1])
+            self._lights[2].setBrightness(color[2])
+        else:
+            self._lights[0].setBrightness(256 - color[0])
+            self._lights[1].setBrightness(256 - color[1])
+            self._lights[2].setBrightness(256 - color[2])            
                 
     def operate(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
@@ -186,12 +191,12 @@ class Pixel(CompositeLight):
 ### The following code is for testing purposes only
 if __name__ == "__main__":
     # Create a traffic light and run it
-    traffic_light = TrafficLight(6, 7, 8)
+    traffic_light = TrafficLight(3, 4, 5)
     print(traffic_light)
     traffic_light.operate()
 
     # Create a pixel and run it
-    pixel = Pixel(3, 4, 5)
+    pixel = Pixel(6, 7, 8, commoncathode=False)
     print(pixel)
     pixel.operate()
     
