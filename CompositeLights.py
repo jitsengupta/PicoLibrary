@@ -170,9 +170,9 @@ class Pixel(CompositeLight):
             self._lights[1].setBrightness(color[1])
             self._lights[2].setBrightness(color[2])
         else:
-            self._lights[0].setBrightness(256 - color[0])
-            self._lights[1].setBrightness(256 - color[1])
-            self._lights[2].setBrightness(256 - color[2])            
+            self._lights[0].setBrightness(255 - color[0])
+            self._lights[1].setBrightness(255 - color[1])
+            self._lights[2].setBrightness(255 - color[2])            
                 
     def operate(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
