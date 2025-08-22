@@ -161,18 +161,18 @@ class Pixel(CompositeLight):
         """
         # setColor method - sets to a specific color
         # color is an RGB tuple
-        # Brightness is set as percentage in this app
+        # Brightness is set as fraction in this app
         """
         
         Log.i(f"Pixel: setColor: {color}")
         if self._commoncathode:
-            self._lights[0].setBrightness(color[0])
-            self._lights[1].setBrightness(color[1])
-            self._lights[2].setBrightness(color[2])
+            self._lights[0].setBrightness(color[0]/255)
+            self._lights[1].setBrightness(color[1]/255)
+            self._lights[2].setBrightness(color[2]/255)
         else:
-            self._lights[0].setBrightness(255 - color[0])
-            self._lights[1].setBrightness(255 - color[1])
-            self._lights[2].setBrightness(255 - color[2])            
+            self._lights[0].setBrightness(1 - color[0]/255)
+            self._lights[1].setBrightness(1 - color[1]/255)
+            self._lights[2].setBrightness(1 - color[2]/255)            
                 
     def operate(self, delay=250):
         """     # Demo run - just run up and down the R, G, B components """
