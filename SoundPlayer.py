@@ -80,7 +80,7 @@ class SoundPlayer(PassiveBuzzer):
 
         #Although we are subclassing PassiveBuzzer we don't want to set up
         # the PWM, so instead of calling super().__init__(), we only set the name
-        self.name = name
+        self._name = name
 
         # Set the rest of the parameters
         self.id = id
@@ -624,8 +624,8 @@ if __name__ == "__main__":
 
     try:
         # Test playing a tone
-        player.setVolume(0.0)
-        player.play(tone=440, duration_ms=5000)  # Play A4 for 5 seconds
+        player.setVolume(0.01)
+        player.playTone(tone=440, duration_ms=5000)  # Play A4 for 5 seconds
         time.sleep(6)  # Wait to ensure tone finishes
         player.stop()  # Stop the tone, just in case
 
