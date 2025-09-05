@@ -30,6 +30,14 @@ class Buzzer:
         self.play(tone)
         time.sleep(duration / 1000)
         self.stop()
+
+    def play(self, tone=500):
+        """ Stub for playing a tone - implemented in subclasses """
+        pass
+    
+    def stop(self):
+        """ Stub for stopping - implemented in subclasses """
+        pass
     
 class ActiveBuzzer(Buzzer):
     """
