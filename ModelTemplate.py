@@ -11,8 +11,11 @@ import random
 from Log import *
 from StateModel import *
 from Counters import *
-from Button import *
 
+## You may want to remove any module you do not need from the imports below
+from Button import *
+from Lights import *
+from Sensors import AnalogSensor
 
 """
 This is the template for a Controller - you should rename this class to something
@@ -41,28 +44,42 @@ This template currently implements a very simple state model that uses a button 
 transition from state 0 to state 1 then a 5 second timer to go back to state 0.
 """
 
-class MyControllerTemplate:
+class MyController:
 
     def __init__(self):
         
+        # STEP 1.
         # Instantiate whatever classes from your own model that you need to control
         # Handlers can now be set to None - we will add them to the model and it will
         # do the handling
         
+        # ...
+        self.led = Light(15, name='LED')
+
         # Instantiate a Model. Needs to have the number of states, self as the handler
         # You can also say debug=True to see some of the transitions on the screen
         # Here is a sample for a model with 4 states
-        self._model = StateModel(2, self, debug=True)
+        self._model = StateModel(3, self, debug=True)
         
         # Instantiate any Buttons that you want to process events from and add
         # them to the model
-        self._button = Button(20, "button1", handler=None)        
+        self._button = Button(2, "button1", handler=None)        
         self._model.addButton(self._button)
         
         # add other buttons if needed. Note that button names must be distinct
         # for all buttons. Events will come back with [buttonname]_press and
         # [buttonname]_release
+
+        # ...
         
+        # Instantiate any sensor you need to process their trip/untrip events from
+        # Events from sensors come back as sensorname_trip and sensorname_untrip
+
+        self._pir = DigitalSensor(pin=9, name="pir", lowActive=False, handler=None)
+        self._ldr = AnalogSensor(pin=26, name="ldr", lowActive=False)
+        self._model.addSensor(self._pir)
+        self._model.addSensor(self._ldr)
+
         # Add any timer you have. Multiple timers may be added but they must all
         # have distinct names. Events come back as [timername}_timeout
         self._timer = SoftwareTimer(name="timer1", handler=None)
@@ -79,6 +96,10 @@ class MyControllerTemplate:
         # some examples:
         self._model.addTransition(0, ["button1_press"], 1)
         self._model.addTransition(1, ["timer1_timeout"], 0)
+
+        self._model.addTransition(0, ["pir_trip", "ldr_trip"], 2)
+        self._model.addTransition(2, ["pir_untrip", "ldr_untrip"], 0)
+
         # etc.
     
     def stateEntered(self, state, event):
@@ -93,10 +114,11 @@ class MyControllerTemplate:
         Log.d(f'State {state} entered on event {event}')
         if state == 0:
             # entry actions for state 0
-            pass
+            self.led.off()
         
         elif state == 1:
             # entry actions for state 1
+            self.led.on()
             self._timer.start(5)
         
             
@@ -150,17 +172,16 @@ class MyControllerTemplate:
             # State 0 do/actions
             pass
         elif state == 1:
-            # State1 do/actions
-            # You can check your sensors here and process events manually if custom events
-            # are needed (these must be previously added using addCustomEvent()
-            # For example, if you want to go from state 1 to state 2 when the motion sensor
-            # is tripped you can do something like this
-            # In __init__ - you should have done self._model.addCustomEvent("motion")
-            # Here, you check the conditions that should check for this condition
-            # Then ask the model to handle the event
-            # if self.motionsensor.tripped():
-            #    self._model.processEvent("motion")
             pass
+        elif state == 2:
+
+            # Remember you do not need to create a loop - the model takes care of that
+            # For example, if you want a state to flash an LED, just turn it on and off
+            # once, and the model will repeat it as long as you are in that state.
+            self.led.on()
+            time.sleep(0.1)
+            self.led.off()
+            time.sleep(0.1)
 
     def run(self):
         """
@@ -187,7 +208,7 @@ class MyControllerTemplate:
 # If you are using a separate main.py or other control script,
 # you will run your model from there.
 if __name__ == '__main__':
-    p = MyControllerTemplate()
+    p = MyController()
     try:
         p.run()
     except KeyboardInterrupt:
