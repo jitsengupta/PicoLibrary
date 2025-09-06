@@ -58,10 +58,12 @@ class DigitalSensor(Sensor):
     name: the name of the sensor
     lowActive: set to True if the sensor gets low when tripped.
     """
-    
-    def __init__(self, pin, name='Digital Sensor', lowActive=True):
+
+    def __init__(self, pin, name='Digital Sensor', lowActive=True, handler=None):
         super().__init__(name, lowActive)
         self._pinio = Pin(pin, Pin.IN)
+        self._handler = None
+        self.setHandler(handler)
 
     def rawValue(self):
         return self._pinio.value()
@@ -74,6 +76,32 @@ class DigitalSensor(Sensor):
         else:
             return False
         
+    def setHandler(self, handler):
+        """ 
+	    set the handler to a new handler. Pass None to remove existing handler
+	    """
+        
+        # if the old handler was active already, or if the new handler is None, remove the irq
+        if self._handler is not None or handler is None:
+            self._pinio.irq(handler = None)
+    
+        # Now set it to th enew handler
+        self._handler = handler
+        # Create the IRQ if the handler is not None
+        if self._handler:
+            self._pinio.irq(trigger = Pin.IRQ_FALLING | Pin.IRQ_RISING, handler = self._callback)
+        
+    def _callback(self, pin):
+        """ The private interrupt handler - will call appropriate handlers """
+        
+        if self._handler is not None:
+            if self.tripped():
+                Log.i(f'Sensor {self._name} tripped')
+                self._handler.sensorTripped(self._name)
+            else:
+                Log.i(f'Sensor {self._name} untripped')
+                self._handler.sensorUntripped(self._name)
+
 class TiltSensor(DigitalSensor):
     """
     A tilt sensor looks like a cap but has just a metal ball on two contacts
@@ -83,12 +111,14 @@ class TiltSensor(DigitalSensor):
     Connect the Tilt sensor across an IO pin and GND. When the sensor is tripped
     the pin will go high.
     """
-    
-    def __init__(self, pin, name='Tilt Sensor'):
-        # Init - do not call the super init - just create the Pin.
-        super().__init__(pin, name)
+
+    def __init__(self, pin, name='Tilt Sensor', handler=None):
+        # Init - do not call the DigitalSensor init - just create the Pin.
+        # Super-superclass init called to set name and lowactiv
+        Sensor.__init__(self, name, lowActive=False)
         self._pinio = Pin(pin, Pin.IN, Pin.PULL_UP)
-        
+        self.setHandler(handler)
+
     def tripped(self):
         """
         A tilt sensor connector is typically always closed, so we
@@ -242,10 +272,10 @@ class UltrasonicSensor(Sensor):
 DHTData = namedtuple('DHTData', ('temperature', 'humidity'))
 
 # DHT11/DHT22 Sensor
-class DHTSensor(DigitalSensor, TemperatureSensor):
+class DHTSensor(Sensor, TemperatureSensor):
     def __init__(self, pin, name='DHT', lowActive=False, threshold=30, poll_delay=2000, sensor_type='DHT11'):
         """
-        Create a new DHT sensor - similar to regular digital sensor but can take
+        Create a new DHT sensor - can take
         either the form of a DHT11 or DHT22 based on the sensor_type parameter
 
         DHT11 is less accurate but cheaper, DHT22 is more accurate but more expensive
@@ -260,7 +290,7 @@ class DHTSensor(DigitalSensor, TemperatureSensor):
         if the sensor is tripped or not. Only the temperature is used for tripping.
         """
         
-        DigitalSensor.__init__(self,pin, name, lowActive)
+        Sensor.__init__(self, name, lowActive)
         self._sensor_type = sensor_type
         self._sensor_class = dht.DHT11 if sensor_type == "DHT11" else dht.DHT22
         self._dht_sensor = self._sensor_class(Pin(pin))
