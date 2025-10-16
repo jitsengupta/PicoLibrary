@@ -136,7 +136,19 @@ class AnalogSensor(Sensor):
     A simple analog sensor that returns a voltage or voltage ratio output
     that can be read in using an ADC. Pico reads in via a 16bit unsigned
 
-    We are just going to poll this to keep things simple
+    Since analog sensors do not have a handler, you need to poll
+    the rawValue() method to get its value. The tripped method takes
+    3 readings and takes the average. If the average is higher/lower
+    than the threshold it will return true.
+    
+    Most analog sensors such as LDRs and thermistors will require
+    a 10K pull-up resistor to the 3.3V rail. For better results,
+    connect the sensor between the ADC pin and AGND (pin 33).
+    Thermistor has a separate class - see below).
+    
+    Set the lowActive to True if rawValue gets lower when the sensor
+    is tripped. You may need to set the threshold appropriately for
+    your application.
     """
     
     def __init__(self, pin, name='Analog Sensor', lowActive=True, threshold = 30000):
@@ -149,7 +161,15 @@ class AnalogSensor(Sensor):
     def tripped(self)->bool:
         """ sensor is tripped if sensor value is higher or lower than threshold """
         
-        v = self.rawValue()
+        # Take 3 measurements after 0.1 sec to get an average
+        v1 = self.rawValue()
+        utime.sleep(0.1)
+        v2 = self.rawValue()
+        utime.sleep(0.1)
+        v3 = self.rawValue()
+        
+        v = (v1 + v2 + v3) / 3
+        
         if (self._lowActive and v < self._threshold) or (not self._lowActive and v > self._threshold):
             Log.i(f"AnalogSensor {self._name}: sensor tripped")
             return True
@@ -184,34 +204,53 @@ class Thermistor(AnalogSensor, TemperatureSensor):
     which is then converted to temperature using the Steinhart-Hart equation.
     """
     
-    def __init__(self, pin, name='Thermistor', lowActive=False, threshold=30):
+    def __init__(self, pin, name='Thermistor', lowActive=False, threshold=30, Vd=3.3, Rp=10, Rt=10, beta=3950):
         """
         Create a new temp sensor - similar to regular analog sensor
         but now tripped will return true when temp is lower than threshold (lowActive=True)
         and higher than threshold (lowActive=False)
-
-        tempthreshold is in degrees Celcius
-        """
         
+        Optional parameters:
+            threshold is in degrees Celcius
+            lowActive defaults to False so will trip at high temps
+            Vd defaults to 3.3v - update if you use 5v rail for pullup
+            Rp value of pullup resistor in K-ohms defaults to 10k
+            Rt value of thermistor resistance (10k typical for 10k thermistors)
+            beta - thermistor beta constant - update if different
+        """
+        self.vd = Vd
+        self.rt = Rt
+        self.rp = Rp
+        self.beta = beta
         AnalogSensor.__init__(self, pin, name, lowActive, threshold)
         
     def rawValue(self):
         """
         Reture the temperature (approx) in celsius
         """
-        
+
         adcvalue = AnalogSensor.rawValue(self)
-        voltage = adcvalue / 65535.0 * 5
-        Rt = 10 * voltage / (5 -voltage)
-        tempK = (1 / (1 / (273.15+25) + (math.log(Rt/10)) / 3950))
+        voltage = adcvalue / 65535.0 * self.vd
+        r = self.rp * voltage / (self.vd -voltage)
+        tempK = (1 / (1 / (273.15+25) + (math.log(r/self.rt)) / self.beta))
         tempC = tempK - 273.15
         return tempC
     
     def temperature(self, unit='C'):
+        """ Return the measured temperature averaged from 3 readings """
+        # Take 3 measurements after 0.1 sec to get an average
+        v1 = self.rawValue()
+        utime.sleep(0.1)
+        v2 = self.rawValue()
+        utime.sleep(0.1)
+        v3 = self.rawValue()
+        
+        v = (v1 + v2 + v3) / 3
+        
         if unit == 'C':
-            return self.rawValue()
+            return v
         elif unit == 'F':
-            return self._celciusToFahrenheit(self.rawValue())
+            return self._celciusToFahrenheit(v)
         else:
             Log.e(f"Unknown unit {unit} for temperature")
             return None  

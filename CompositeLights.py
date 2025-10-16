@@ -130,14 +130,14 @@ class Pixel(CompositeLight):
     of a pixel that can be technically set to any color.
     """        
 
-    def __init__(self, Rpin, Gpin, Bpin, commoncathode = True):
+    def __init__(self, rpin, gpin, bpin, commoncathode = True):
         """     # Pixel constructor """
 
         Log.i("Pixel: Constructor - add R G B in that order")
         super().__init__()
-        self._lights.append(DimLight(Rpin, 'PixelR'))
-        self._lights.append(DimLight(Gpin, 'PixelG'))
-        self._lights.append(DimLight(Bpin, 'PixelB'))
+        self._lights.append(DimLight(rpin, 'PixelR'))
+        self._lights.append(DimLight(gpin, 'PixelG'))
+        self._lights.append(DimLight(bpin, 'PixelB'))
         self._commoncathode = commoncathode
         self._running = False
         
