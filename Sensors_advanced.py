@@ -1,6 +1,5 @@
 import dht
 from collections import namedtuple
-from mpu6050 import *
 from Sensors import *
 
 class UltrasonicSensor(Sensor):
@@ -78,6 +77,57 @@ class UltrasonicSensor(Sensor):
             return True
         else:
             return False
+
+class GasSensor(Sensor):
+    """
+    An encapsulated version of the MQ-2 gas sensor. Although technically it is a 
+    subclass of AnalogSensor, we subclass Sensor directly to avoid using ADC pins
+    only. The Gas sensor provides continuous data, so subclassing Sensor makes sense.
+
+    In addition, the MQ2 class is used to provide calibration and gas concentration
+    calculations. The calibration is done using the clean air factor of the sensor.
+    The gas concentration is calculated using the resistance ratio of the sensor
+    and the gas curves provided in the MQ2 datasheet.
+    """
+
+    def __init__(self, pin, name='GasSensor', lowActive=False, threshold = 0.3, baseVoltage=3.3):
+        """
+        Initialize the Gas sensor with the given pin, name, lowActive and threshold.
+        """
+        super().__init__(name, lowActive)
+        self._threshold = threshold
+        try:
+            from mq2 import MQ2
+        except ImportError:
+            Log.e("mq2 module not found. Please ensure mq2.py is available.")
+            raise
+        self._mq2 = MQ2(pin, baseVoltage=baseVoltage)
+        self._mq2.calibrate()
+    
+    def rawValue(self):
+        """
+        Return the raw resistance ratio of the sensor.
+        """
+        return self._mq2.readRatio()
+    
+    def tripped(self) -> bool:
+        """
+        Sensor is tripped if resistance ratio is higher or lower than threshold
+        """
+        return self.rawValue() < self._threshold if self._lowActive else self.rawValue() >= self._threshold
+    
+    def getGasConcentrations(self):
+        """
+        Return a dictionary of gas concentrations in ppm for various gases.
+        """
+        concentrations = {
+            'LPG': self._mq2.readLPG(), 
+            'Smoke': self._mq2.readSmoke(), 
+            'Hydrogen': self._mq2.readHydrogen(), 
+            'Methane': self._mq2.readMethane()
+            }
+        return concentrations
+
 
 DHTData = namedtuple('DHTData', ('temperature', 'humidity'))
 
@@ -198,8 +248,13 @@ class MPU(Sensor, TemperatureSensor):
             self._i2cid = 1
         else:
             raise ValueError('Invalid SDA/SCL pins')
+        try:
+            from mpu6050 import MPU6050
+            self._mpu = MPU6050(self._i2cid, sda, scl, ofs)
+        except ImportError:
+            Log.e("mpu6050 module not found. Please ensure mpu6050.py is available.")
+            raise
 
-        self._mpu = MPU6050(self._i2cid, sda, scl, ofs)
 
     def calibrate(self):
         """
