@@ -3,7 +3,12 @@
 A collection of classes around the Raspberry Pi Pico Hardware interface to make it easy to 
 work with Lights (LEDs, RGB LEDs), Sound (active and passive buzzers), Displays (Dot matrix 
 with Max7219, 7 segment displays bare and with TM 1637, 160x LCD modules with I2C backpacks
-and without I2C, as well as OLED/LCD displays with I2C).
+and without I2C, as well as OLED/LCD displays with I2C), and all kinds of sensors, keypad 
+and other types of accessories.
+
+All classes and sublclasses are placed at the root level of the library to allow use of some of
+the simulation platforms that do not support folders. (Almost) all classes have been tested on
+real hardware (currently the only exception is the MQ2 gas sensor)
 
 You can check out the YouTube Channel (https://youtube.com/@designwithpico) that covers many
 of these classes, including an ongoing Tutorial series.
@@ -23,7 +28,9 @@ Currently supported hardware - (more to be added)
 * Displays - 7 segment displays (both sda/scl controlled as well as bit-banged using PIO)
 * LED matrix displays - (MAX7219 driver)
 * Sensors - both ditigal (0/1) as well as Analog (ADC 16 bit) sensors
-* Specialized Sensors - Ultrasonic Sensor, Temp sensor, DHT11/DHT12 temp/hum sensor and Tilt sensor
+* Specialized Sensors - Ultrasonic Sensor, Temp sensor, DHT11/DHT12 temp/hum sensor and Tilt sensor, MQ-2 gas sensor
+* RFID Reader - supports the RC522 13.56MHz RFID reader (SPI)
+* Keypad - standard 4x4 alphanumeric keypads
 * I2S audio boards - currently only output supported via SoundPlayer, but input (microphone) coming soon.
 
 Contact Dr. Sengupta if you need support for any other hardware
