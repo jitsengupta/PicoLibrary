@@ -16,6 +16,12 @@ import ubinascii
 import json
 from Log import *
 
+# METHOD CONSTANTS - should not be needed outside - use getJson, postJson etc
+GET = 1001
+POST = 1002
+PUT = 1003
+DELETE = 1004 # not yet supported
+
 class Net:
     
     def __init__(self):
@@ -29,6 +35,7 @@ class Net:
         self._sta = None
         self._ap = None
         self._blink = False
+        self._status_code = 0 # last status code from network operations
         
     def connect(self, ssid, password=None, max_wait=10):
         """
@@ -54,9 +61,9 @@ class Net:
             
         # Manage connection errors
         if self._sta.status() != network.STAT_GOT_IP:
+            self._status_code = self._sta.status()
             raise RuntimeError('Network Connection has failed!')
         else:
-            print("Connected!")
             Log.i('Net: connected!')
     
     def startAccessPoint(self, ssid, password=None):
@@ -198,6 +205,8 @@ class Net:
             import machine
             tm = time.gmtime(unixtime)
             machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
+        else:
+            Log.e("Could not update time from API")
         return time.localtime()
 
     def getFormattedTime(self, extra='day'):
@@ -222,65 +231,129 @@ class Net:
         else:
             return f'{mm:02}/{dd:02}/{yy:04} {h:02}{col}{m:02}'
 
-    def getJson(self, url):
+    def getJson(self, url, headers=None, auth=None, token=None):
         """
-        Get the JSON data from a REST API. Only valid JSON supported.
-        Only GET for now. No POST or PUT. Returns the parsed json structure
+        Get the JSON data from a REST API. Only valid JSON returns supported.
+        
+        Parameters:
+        REQUIRED: URL endpoint for the GET request
+        
+        Optional:
+        headers: Any additional headers that need to be sent
+        auth: Basic authentication as a tuple (username, password)
+        token: Bearer token if it is to be used as authentication for retrieving
+        
+        Obviously only 1 should be used if auth is needed.
+        
+        Returns dictionary from JSON returned by web service. Returns None
+        if valid JSON was not obtained.
+        Check status_code after calling if None is returned        
         """
         
-        try:
-            if self._sta == None:
-                self.connect()
-            data=requests.get(url)
-            jsondata = data.json()
-            data.close()
-            return jsondata
-        except Exception as e:
-            Log.e(f"could not connect {e}")
-            return None
+        # Moving all request messages into one method to avoid duplicate code
+        return self._send(url, method=GET, data=None, headers=headers, auth=auth, token=token)
 
-    def putJson(self, url, data):
+    def postJson(self, url, data, headers=None, auth=None, token=None):
+        """
+        Use POST to insert data into a remote webservice. 
+
+        The webservice should be configured to accept data in JSON format.
+        Passed in data should be a dictionary with all parameters
+        that are expected by this webservice.
+        
+        Parameters:
+        REQUIRED: URL endpoint for the GET request
+        data = dictionary containing data to be sent.
+           Note that this is converted to JSON with a
+           content-type application/json.
+           if urlencoded data is to be sent by PUT,
+           please include in the URL itself.
+           data may be set to None if no data needs to be PUT
+        
+        Optional:
+        headers: Any additional headers needed.
+        auth: Basic authentication as a tuple (username, password)
+        token: Bearer token if it is to be used as authentication for retrieving
+        
+        Obviously only 1 should be used if auth is needed. 
+        
+        Returns dictionary from JSON returned by web service. Returns None
+        if valid JSON was not obtained.
+        Check status_code after calling if None is returned
+        """
+        return self._send(url, method=POST, data=data, headers=headers, auth=auth, token=token)
+    
+    
+    def putJson(self, url, data, headers=None, auth=None, token=None):
         """
         Use the PUT method to update data into a remote webservice
         The webservice should be configured to accept data in JSON format.
         Passed in data should be a dictionary with all parameters
         that are expected by this webservice.
         
-        Returns the status code or None if fail
-        """
+        Parameters:
+        REQUIRED: URL endpoint for the GET request
+        data = dictionary containing data to be sent.
+           Note that this is converted to JSON with a
+           content-type application/json.
+           if urlencoded data is to be sent by PUT,
+           please include in the URL itself.
+           data may be set to None if no data needs to be PUT
         
-        headers = {
-            "Content-Type": "application/json"
-        }
+        Optional:
+        headers: Any additional headers needed.
+        auth: Basic authentication as a tuple (username, password)
+        token: Bearer token if it is to be used as authentication for retrieving
+        
+        Obviously only 1 should be used if auth is needed. 
 
-        try:
-            response = requests.put(url, data=json.dumps(data), headers=headers)
-            status = response.status_code
-            Log.d(f"Status Code:{status}")
-            Log.d(f"Response:{response.text}")
-            response.close()
-            return status
-        except Exception as e:
-            Log.e(f"Failed to send request: {e}")
-            return None
-        
-    def postJson(self, url, data):
+        Returns dictionary from JSON returned by web service. Returns None
+        if valid JSON was not obtained.
+        Check status_code after calling if None is returned
         """
-        Similar to the above, use POST instead of PUT
-        Configure web service to accept JSON and create new entries
+        return self._send(url, method=PUT, data=data, headers=headers, auth=auth, token=token)
+    
+    def _send(self, url, method, data=None, headers=None, auth=None, token=None):
         """
+        Internal method to handle all requests
+        """
+        if method != GET: # Get method doesn't need content type
+            if not headers:
+                headers = {
+                    "Content-Type": "application/json"
+                }
+            elif not "Content-Type" in headers:
+                headers["Content-Type"] = "application/json"
         
-        headers = {
-            "Content-Type": "application/json"
-        }
-
+        if token:
+            bearer = f"Bearer {token}"
+            if headers:
+                headers["Authorization"] = bearer
+            else:
+                headers = {"Authorization": bearer}
+            
         try:
-            response = requests.post(url, data=json.dumps(data), headers=headers)
-            status = response.status_code
-            Log.d(f"Status Code:{status}")
-            Log.d(f"Response:{response.text}")
+            if not self.isConnected():
+                raise RuntimeError("Not connected to any network")
+            
+            if method == GET:
+                response=requests.get(url, headers=headers, auth=auth)
+            elif method == PUT:
+                response=requests.put(url,
+                             json = data,
+                             headers=headers, auth=auth)
+            elif method == POST:
+                response=requests.post(url,
+                             json = data,
+                             headers=headers, auth=auth)
+            else:
+                raise RuntimeError("Method not supported")
+            
+            self.status_code = response.status_code
+            jsondata = response.json()
+            Log.d(f"Status Code:{self.status_code}")
             response.close()
-            return status
+            return jsondata
         except Exception as e:
             Log.e(f"Failed to send request: {e}")
             return None
@@ -342,20 +415,20 @@ class WebServer:
             except OSError as e:
                 if e.errno == 98:  # EADDRINUSE
                     if attempt < max_retries - 1:
-                        print(f"Port {port} in use, waiting 2 seconds... (attempt {attempt + 1}/{max_retries})")
+                        Log.e(f"Port {port} in use, waiting 2 seconds... (attempt {attempt + 1}/{max_retries})")
                         time.sleep(2)
                         continue
                     else:
-                        print(f"Port {port} still in use after {max_retries} attempts")
-                        print("Try changing the port number or wait a bit longer")
+                        Log.e(f"Port {port} still in use after {max_retries} attempts")
+                        Log.e("Try changing the port number or wait a bit longer")
                         raise
                 else:
                     raise
         
         s.listen(1)
         
-        print(f"Web server started on port {port}")
-        print("Server is running... Press Ctrl+C to stop")
+        Log.d(f"Web server started on port {port}")
+        Log.d("Server is running... Press Ctrl+C to stop")
         
         Log.i(f"Serving UI on http://{addr[0]}:{addr[1]}")
         cl = None
@@ -379,10 +452,10 @@ class WebServer:
                     cl.send(response.encode('utf-8'))
                     cl.close()
                 except KeyboardInterrupt:
-                    print("\nKeyboard interrupt received - shutting down server gracefully...")
+                    Log.e("\nKeyboard interrupt received - shutting down server gracefully...")
                     break
                 except Exception as e:
-                    print(f"Error handling request: {e}")
+                    Log.e(f"Error handling request: {e}")
                     if cl:
                         try:
                             cl.close()
@@ -391,13 +464,13 @@ class WebServer:
                         cl = None
                         
         except KeyboardInterrupt:
-            print("\nKeyboard interrupt received - shutting down server gracefully...")
+            Log.e("\nKeyboard interrupt received - shutting down server gracefully...")
         finally:
             # Clean up any remaining connection
             if cl:
                 try:
                     cl.close()
-                    print("Active connection closed")
+                    Log.d("Active connection closed")
                 except:
                     pass
             
@@ -408,15 +481,15 @@ class WebServer:
                     pass
                 try:
                     s.close()
-                    print("Server socket closed")
+                    Log.d("Server socket closed")
                 except:
                     pass
                 s = None
             
-            print("Waiting 2 seconds for socket cleanup...")
+            Log.d("Waiting 2 seconds for socket cleanup...")
             time.sleep(2)
             
-            print("Server shutdown complete")
+            Log.d("Server shutdown complete")
        
     def generate_html(self, params = None):
         """
@@ -468,7 +541,7 @@ class WebServer:
         try:
             # Simple parsing for GET parameters
             params = {}
-            print(f"Request is {request}")
+            Log.d(f"Request is {request}")
             
             if request.startswith('POST'):
                 # Extract POST data
@@ -477,7 +550,7 @@ class WebServer:
                 params = self.parse_data(post_data)
             elif request.startswith('GET'):
                 lines = request.split('\r\n')
-                print(f"Lines: {lines}")
+                Log.d(f"Lines: {lines}")
                 url = lines[0].split()[1]
                 if '?' in url:
                     params_str = url.split('?', 1)[1]
