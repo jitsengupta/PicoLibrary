@@ -367,7 +367,7 @@ class WebServer:
                     Log.i(f"Client connected from {addr}")
                     request = cl.recv(1024).decode('utf-8')
                     #request = str(request)
-                    Log.d(f"Request: {request[:200] + "..." if len(request) > 200 else request}")
+                    Log.d(f"Request: {request[:200] + '...' if len(request) > 200 else request}")
                     
                     params = self.parse_request(request)
                     Log.d(f"Params: {params}")

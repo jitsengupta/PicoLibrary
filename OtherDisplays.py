@@ -215,3 +215,99 @@ def sevseg():
     out(pins, 8)            .side(8)      # 5
     jmp("0")                .side(0)      # 6
     wrap()
+
+class SevenSegmentDisplaySingle(Display):
+    """
+    Seven Segment Display Single class - supports daisy-chained shift registers
+    for a multi-digit 7-segment display.
+    """
+    
+    def __init__(self, dataPin, clockPin, latchPin, numDigits=1):
+        self._data = Pin(dataPin, Pin.OUT)
+        self._clock = Pin(clockPin, Pin.OUT)
+        self._latch = Pin(latchPin, Pin.OUT)
+        self._numDigits = numDigits
+        
+        # Mapping alphanumeric chars to 7-segment display byte
+        # A=1, B=2, C=4, D=8, E=16, F=32, G=64, DP=128
+        self._chars = {
+            '0': 0x3F, '1': 0x06, '2': 0x5B, '3': 0x4F,
+            '4': 0x66, '5': 0x6D, '6': 0x7D, '7': 0x07,
+            '8': 0x7F, '9': 0x6F, 'A': 0x77, 'a': 0x77,
+            'B': 0x7C, 'b': 0x7C, 'C': 0x39, 'c': 0x58,
+            'D': 0x5E, 'd': 0x5E, 'E': 0x79, 'e': 0x79,
+            'F': 0x71, 'f': 0x71, 'G': 0x3D, 'g': 0x6F,
+            'H': 0x76, 'h': 0x74, 'I': 0x06, 'i': 0x04,
+            'J': 0x0E, 'j': 0x0E, 'K': 0x76, 'k': 0x70,
+            'L': 0x38, 'l': 0x38, 'M': 0x15, 'm': 0x15,
+            'N': 0x54, 'n': 0x54, 'O': 0x3F, 'o': 0x5C,
+            'P': 0x73, 'p': 0x73, 'Q': 0x67, 'q': 0x67,
+            'R': 0x50, 'r': 0x50, 'S': 0x6D, 's': 0x6D,
+            'T': 0x78, 't': 0x78, 'U': 0x3E, 'u': 0x1C,
+            'V': 0x3E, 'v': 0x1C, 'W': 0x2A, 'w': 0x2A,
+            'X': 0x76, 'x': 0x76, 'Y': 0x6E, 'y': 0x6E,
+            'Z': 0x5B, 'z': 0x5B, ' ': 0x00, '-': 0x40,
+            '_': 0x08, '=': 0x48, '.': 0x80
+        }
+        self.reset()
+        
+    def _shift_out(self, data_list):
+        self._clock.value(0)
+        self._latch.value(0)
+        self._clock.value(1)
+        
+        for val in reversed(data_list):
+            for i in range(7, -1, -1):
+                self._clock.value(0)
+                self._data.value((val >> i) & 1)
+                self._clock.value(1)
+                
+        self._clock.value(0)
+        self._latch.value(1)
+        self._clock.value(1)
+
+    def reset(self):
+        self._shift_out([0] * self._numDigits)
+
+    def showNumber(self, number):
+        text = str(number)
+        if len(text) < self._numDigits:
+            text = " " * (self._numDigits - len(text)) + text
+        self.showText(text)
+
+    def showNumbers(self, num1, num2, colon=True):
+        half1 = self._numDigits // 2
+        half2 = self._numDigits - half1
+        s1 = str(num1)
+        s2 = str(num2)
+        if len(s1) < half1:
+            s1 = " " * (half1 - len(s1)) + s1
+        if len(s2) < half2:
+            s2 = "0" * (half2 - len(s2)) + s2
+        self.showText(s1 + s2)
+
+    def showText(self, text):
+        text = str(text)
+        data = []
+        i = 0
+        while i < len(text) and len(data) < self._numDigits:
+            char = text[i]
+            val = self._chars.get(char, 0)
+            
+            if i + 1 < len(text) and text[i+1] == '.':
+                val |= 0x80
+                i += 1
+                
+            data.append(val)
+            i += 1
+            
+        while len(data) < self._numDigits:
+            data.append(0)
+            
+        self._shift_out(data)
+
+    def scroll(self, text, speed=250):
+        text = str(text) + " " * self._numDigits
+        for i in range(len(text)):
+            self.showText(text[i:])
+            time.sleep_ms(speed)
