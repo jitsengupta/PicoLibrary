@@ -249,8 +249,8 @@ class MPU(Sensor, TemperatureSensor):
         else:
             raise ValueError('Invalid SDA/SCL pins')
         try:
-            from mpu6050 import MPU6050
-            self._mpu = MPU6050(self._i2cid, sda, scl, ofs)
+            import mpu6050
+            self._mpu = mpu6050.MPU6050(self._i2cid, sda, scl, ofs)
         except ImportError:
             Log.e("mpu6050 module not found. Please ensure mpu6050.py is available.")
             raise
@@ -262,7 +262,8 @@ class MPU(Sensor, TemperatureSensor):
         re-initialize the sensor which will auto-calibrate
         """
 
-        self._mpu = MPU6050(self._i2cid, self._sda, self._scl)
+        import mpu6050
+        self._mpu = mpu6050.MPU6050(self._i2cid, self._sda, self._scl)
 
     def temperature(self, unit='C'):
         """

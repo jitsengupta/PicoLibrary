@@ -11,8 +11,6 @@
 from machine import Pin, I2C, SPI
 import time
 from Log import *
-from gpio_lcd import *
-from pico_i2c_lcd import I2cLcd
 
 class Display:
     """
@@ -70,6 +68,7 @@ class LCDDisplay(Display):
         
         if sda < 0:
             Log.i("LCDDisplay Constructor")
+            from gpio_lcd import GpioLcd
             self._lcd = GpioLcd(rs_pin=Pin(rs),
                 enable_pin=Pin(e),
                 d4_pin=Pin(d4),
@@ -92,6 +91,7 @@ class LCDDisplay(Display):
             i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
             try:
                 I2C_ADDR = i2c.scan()[0]
+                from pico_i2c_lcd import I2cLcd
                 self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
             except:
                 raise ValueError('Could not connect to display - check wiring.')

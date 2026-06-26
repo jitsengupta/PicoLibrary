@@ -12,7 +12,6 @@ and using Soft_spi allows us to use any GPIO pins for communication.
 """
 
 from machine import Pin, SoftSPI
-import mfrc522
 import utime
 from Log import *
 
@@ -33,6 +32,7 @@ class RFIDReader:
         - sda: The pin number for the CS pin (many boards use SDA for this pin)
         """
 
+        import mfrc522
         Log.i("RFIDReader constructor")
         self._spi = SoftSPI(baudrate=100000, polarity=0, phase=0, sck=Pin(sck), mosi=Pin(mosi), miso=Pin(miso)) # Soft_spi
         self._sda = Pin(sda, Pin.OUT)

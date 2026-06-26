@@ -5,8 +5,7 @@ A LightStrip and an LCD Display - I may add additional implementations in the fu
 for example, using an actual 7 led bar - maybe with a shift register
 """
 
-from Displays import *
-from LightStrip import *
+from Lights import *
 from Log import *
 
 class LevelDisplay:

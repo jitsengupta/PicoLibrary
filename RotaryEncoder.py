@@ -7,7 +7,6 @@
 # Author: Arijit Sengupta
 """
 
-from rotary_irq_rp2 import *
 
 class RotaryEncoder:
     """
@@ -40,7 +39,10 @@ class RotaryEncoder:
         print(f'Encoder {name} value changed to {value}')
     """
 
-    def __init__(self, clk=13, dt=14, name='Rotary', handler = None, min=0, max=100, reverse=False, range_mode=Rotary.RANGE_WRAP):
+    def __init__(self, clk=13, dt=14, name='Rotary', handler = None, min=0, max=100, reverse=False, range_mode=None):
+        from rotary_irq_rp2 import RotaryIRQ, Rotary
+        if range_mode is None:
+            range_mode = Rotary.RANGE_WRAP
         self._encoder = RotaryIRQ(pin_num_clk=clk,
                                     pin_num_dt=dt,
                                     min_val = min,

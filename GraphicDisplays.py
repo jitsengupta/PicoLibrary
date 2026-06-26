@@ -8,9 +8,6 @@
 """
 
 from Displays import *
-from ssd1306 import SSD1306_I2C
-import lcd128_32_fonts
-from lcd128_32 import lcd128_32
 
 class LCDHiResDisplay(Display):
     """
@@ -31,6 +28,7 @@ class LCDHiResDisplay(Display):
     
     def __init__(self, sda=20, scl=21, i2cid=0, width=128, height=32):
         Log.i("LCDHiResDisplay (I2C) Constructor")
+        from lcd128_32 import lcd128_32
         i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
         I2C_ADDR = i2c.scan()[0]
         try:
@@ -70,6 +68,7 @@ class OLEDDisplay(Display):
     """
 
     def __init__(self, sda=26, scl=27, i2cid=1, width=128, height=64):
+        from ssd1306 import SSD1306_I2C
         self._i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
         self._oled = SSD1306_I2C(width, height, self._i2c)
         self.reset()

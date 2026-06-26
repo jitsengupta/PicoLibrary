@@ -11,8 +11,6 @@ us to keep the number of files in the project to a minimum.
 
 from Displays import *
 from Log import *
-import tm1637
-import max7219
 import rp2
 from rp2 import PIO
 
@@ -23,6 +21,7 @@ class SevenSegmentDisplay(Display):
     """
 
     def __init__(self, clk=16, dio=17):
+        import tm1637
         self._tm = tm1637.TM1637(clk=Pin(clk), dio=Pin(dio))
 
     def reset(self):
@@ -65,6 +64,7 @@ class DotMatrixDisplay(Display):
     def __init__(self, sck=18, mosi=19, cs=17):
         self._spi = SPI(0, baudrate=10000000, polarity=1, phase=0, sck=Pin(sck), mosi=Pin(mosi))
         # Create matrix display instant, which has four MAX7219 devices.
+        import max7219
         self._dot = max7219.Matrix8x8(self._spi, Pin(cs, Pin.OUT), 4)
         self._dot.brightness(10)
         self.reset()

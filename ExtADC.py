@@ -7,7 +7,6 @@ Uses adc1x15.py driver from https://github.com/robert-hh/ads1x15
 """
 
 from machine import I2C, Pin
-from ads1x15 import *
 from Button import *
 
 class ExtADC:
@@ -30,6 +29,7 @@ class ExtADC:
         else:
             raise ValueError('Invalid SDA/SCL pins')
         i2c = I2C(i2cid, sda=Pin(sda), scl=Pin(scl), freq=400000)
+        from ads1x15 import ADS1115
         self.adc = ADS1115(i2c, address=0x48, gain=1)
 
     def read_u16(self, channel):
