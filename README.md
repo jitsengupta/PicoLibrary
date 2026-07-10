@@ -1,16 +1,17 @@
+---
 # PicoLibrary
-
 A collection of classes around the Raspberry Pi Pico Hardware interface to make it easy to 
 work with Lights (LEDs, RGB LEDs), Sound (active and passive buzzers), Displays (Dot matrix 
 with Max7219, 7 segment displays bare and with TM 1637, 160x LCD modules with I2C backpacks
 and without I2C, as well as OLED/LCD displays with I2C), and all kinds of sensors, keypad 
 and other types of accessories.
+---
 
 All classes and sublclasses are placed at the root level of the library to allow use of some of
 the simulation platforms that do not support folders. (Almost) all classes have been tested on
 real hardware (currently the only exception is the MQ2 gas sensor)
 
-You can check out the YouTube Channel (https://youtube.com/@designwithpico) that covers many
+You can check out the YouTube Channel (https://youtube.com/@designwithpython) that covers many
 of these classes, including an ongoing Tutorial series.
 
 Also includes simple support for buttons and a basic implementation of a state model for
@@ -25,12 +26,14 @@ Currently supported hardware - (more to be added)
 * Displays - 160x displays (both I2C as well has GPIO)
 * Displays - OLED displays (SSD1306 driver)
 * LCD Displays - Currently ST7789 only supported
-* Displays - 7 segment displays (both sda/scl controlled as well as bit-banged using PIO)
+* Displays - 7 segment displays both raw using shift registers as well as with backpacks like MAX7219 or TM1637
 * LED matrix displays - (MAX7219 driver)
 * Sensors - both ditigal (0/1) as well as Analog (ADC 16 bit) sensors
 * Specialized Sensors - Ultrasonic Sensor, Temp sensor, DHT11/DHT12 temp/hum sensor and Tilt sensor, MQ-2 gas sensor
 * RFID Reader - supports the RC522 13.56MHz RFID reader (SPI)
 * Keypad - standard 4x4 alphanumeric keypads
 * I2S audio boards - currently only output supported via SoundPlayer, but input (microphone) coming soon.
+* Motor controllers - stepper motor controllers (L293D, L298N),servo motor controllers (SG90, MG996R)
+* Lora long range communication using DX-LR22 or similar boards using UART serial communication
 
 Contact Dr. Sengupta if you need support for any other hardware

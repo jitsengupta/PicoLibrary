@@ -139,3 +139,5 @@ Matcher.py
 .vscode/settings.json
 .vscode/extensions.json
 .micropico
+.agents/skills.json
+secrets.py

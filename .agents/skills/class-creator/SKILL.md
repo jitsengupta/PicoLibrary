@@ -9,7 +9,9 @@ This skill enforces standards for adding new Python classes to the PicoLibrary r
 
 ## 1. File Header Template
 
-Every new Python file containing a class MUST begin with a triple-quoted comment block containing the filename, a description of the module/classes, and the author name. 
+Every new Python file containing a class MUST begin with a triple-quoted comment block containing the filename, a description of the module/classes, and the author name.
+
+To determine the author name, try running the command `git config user.name`. If a name is returned, use it in the header. If no name can be retrieved, use the placeholder `insert your name here`.
 
 Use the following format exactly:
 
@@ -17,16 +19,25 @@ Use the following format exactly:
 """
 # <Filename>.py
 # <A concise description of the file, its purpose, and the classes it implements>
-# Author: Arijit Sengupta
+# Author: <Author Name or insert your name here>
 """
 ```
 
-**Example:**
+**Example (if name is found):**
 ```python
 """
 # TemperatureSensor.py
 # Implementation of a temperature sensor reading from an analog pin
 # Author: Arijit Sengupta
+"""
+```
+
+**Example (if name is not found):**
+```python
+"""
+# TemperatureSensor.py
+# Implementation of a temperature sensor reading from an analog pin
+# Author: insert your name here
 """
 ```
 
