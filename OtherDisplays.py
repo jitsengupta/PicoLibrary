@@ -137,7 +137,7 @@ class SevenSegmentDisplay(Display):
             s2 = '{0:0>{width}d}'.format(num2, width=self._num_digits - half)
             self.showText(s1 + s2, colon=colon)
 
-    def showText(self, text, colon=False):
+    def showText(self, text, colon=False, colonpos=1):
         """
         Show a string - only first num_digits characters will be shown
         for anything bigger than num_digits characters.
@@ -156,8 +156,8 @@ class SevenSegmentDisplay(Display):
                     i += 1
                 data.append(val)
                 i += 1
-            if colon and len(data) > 1:
-                data[1] |= 0x80
+            if colon and len(data) > colonpos:
+                data[colonpos] |= 0x80
             while len(data) < self._num_digits:
                 data.append(0x00)
             

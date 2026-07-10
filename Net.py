@@ -192,22 +192,87 @@ class Net:
             mac = ubinascii.hexlify(self._ap.config('mac'),':').decode()
         return mac
         
-    def updateTime(self, timezone = 'America/New_York'):
-        """ Update local time using an the world timeapi """
+    def updateTime(self, std_offset = -5):
+        """ Update local time using NTP with automatic US Daylight Saving Time (DST) detection """
+        import ntptime
+        import machine
         
-        apiendpoint = 'https://worldtimeapi.org/api/timezone/' + timezone
-        json = self.getJson(apiendpoint)
-        if json:
-            unixtime = json['unixtime']
-            raw_offset = json['raw_offset']
-            dst_offset = json['dst_offset']
-            unixtime = unixtime + raw_offset + dst_offset
-            import machine
-            tm = time.gmtime(unixtime)
+        try:
+            # Sync system time with NTP (gives UTC)
+            ntptime.settime()
+            utc_time = time.time()
+            
+            # First, convert UTC to standard time (e.g., EST = UTC - 5)
+            std_time = utc_time + (std_offset * 3600)
+            tm = time.gmtime(std_time)
+            
+            # Check if DST is active for the calculated standard time
+            year, month, day, hour = tm[0], tm[1], tm[2], tm[3]
+            
+            is_dst = False
+            if month > 3 and month < 11:
+                is_dst = True
+            elif month == 3:
+                # DST starts 2nd Sunday in March
+                # Find weekday of March 1st (0 = Monday, 6 = Sunday)
+                w = time.gmtime(time.mktime((year, 3, 1, 0, 0, 0, 0, 0)))[6]
+                dst_start = 8 + (6 - w) % 7
+                if day > dst_start or (day == dst_start and hour >= 2):
+                    is_dst = True
+            elif month == 11:
+                # DST ends 1st Sunday in November
+                # Find weekday of November 1st
+                w = time.gmtime(time.mktime((year, 11, 1, 0, 0, 0, 0, 0)))[6]
+                dst_end = 1 + (6 - w) % 7
+                if day < dst_end or (day == dst_end and hour < 2):
+                    is_dst = True
+            
+            # Apply an extra hour if DST is active
+            if is_dst:
+                local_time = std_time + 3600
+                tm = time.gmtime(local_time)
+            
+            # Update RTC
+            # tm: (year, month, mday, hour, minute, second, weekday, yearday)
+            # RTC: (year, month, day, weekday, hour, minute, second, subsecond)
             machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
-        else:
-            Log.e("Could not update time from API")
+        except Exception as e:
+            Log.e(f"Could not update time from NTP: {e}")
+            
         return time.localtime()
+
+
+    def getWeatherByLocation(self, location_name):
+        """ Get temperature and humidity from Open-Meteo for a given city/state name
+            Returns a dictionary with resolved_location,
+            temperature, humidity and rain_chance
+        """
+        query = location_name.replace(" ", "%20")
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={query}&count=1"
+        geo_data = self.getJson(geo_url)
+        
+        if not geo_data or "results" not in geo_data:
+            Log.e(f"Could not find coordinates for location: {location_name}")
+            return None
+            
+        location_info = geo_data["results"][0]
+        lat = location_info["latitude"]
+        lon = location_info["longitude"]
+        resolved_name = f"{location_info.get('name')}, {location_info.get('admin1', '')}"
+        
+        weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,precipitation_probability&temperature_unit=fahrenheit"
+        weather_data = self.getJson(weather_url)
+        
+        if weather_data and "current" in weather_data:
+            current = weather_data["current"]
+            return {
+                "resolved_location": resolved_name,
+                "temperature": current["temperature_2m"],
+                "humidity": current["relative_humidity_2m"],
+                "rain_chance": current["precipitation_probability"]
+            }
+        
+        return None
 
     def getFormattedTime(self, extra='day'):
         """
