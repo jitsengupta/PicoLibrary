@@ -47,7 +47,8 @@ _CHARS = {
     '?': 0x53,    # Question mark
     '°': 0x63,    # Degree symbol
     ':': 0x48,    # Colon (mapped to '=')
-    ';': 0x48     # Semicolon (mapped to '=')
+    ';': 0x48,    # Semicolon (mapped to '=')
+    '%': 0x49     # Percent (mapped to 3 dashes) 
 }
 
 class SevenSegmentDisplay(Display):

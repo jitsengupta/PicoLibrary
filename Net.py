@@ -459,11 +459,8 @@ class WebServer:
         
         import socket
         
-        if not self._net.isConnected():
-            Log.e("Cannot serve UI: Not connected to any network")
-            return
-        
-        addr = socket.getaddrinfo(self._net.getLocalIp(), port)[0][-1]
+        # Bind to 0.0.0.0 so we can listen on all interfaces, even if they connect/reconnect later.
+        addr = socket.getaddrinfo('0.0.0.0', port)[0][-1]
         s = socket.socket()
         try:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -495,7 +492,7 @@ class WebServer:
         Log.d(f"Web server started on port {port}")
         Log.d("Server is running... Press Ctrl+C to stop")
         
-        Log.i(f"Serving UI on http://{addr[0]}:{addr[1]}")
+        Log.i(f"Serving UI on port {port} (access via http://{self._net.getLocalIp()})")
         cl = None
         
         try:
@@ -503,8 +500,35 @@ class WebServer:
                 try:
                     cl, addr = s.accept()
                     Log.i(f"Client connected from {addr}")
-                    request = cl.recv(1024).decode('utf-8')
-                    #request = str(request)
+                    
+                    req_raw = b""
+                    while b"\r\n\r\n" not in req_raw and len(req_raw) < 4096:
+                        chunk = cl.recv(512)
+                        if not chunk:
+                            break
+                        req_raw += chunk
+                    
+                    if b"\r\n\r\n" in req_raw:
+                        headers, body = req_raw.split(b"\r\n\r\n", 1)
+                        content_length = 0
+                        for line in headers.split(b"\r\n"):
+                            if line.lower().startswith(b"content-length:"):
+                                try:
+                                    content_length = int(line.split(b":", 1)[1].strip())
+                                except:
+                                    pass
+                                break
+                        
+                        while len(body) < content_length and len(req_raw) < 8192:
+                            chunk = cl.recv(512)
+                            if not chunk:
+                                break
+                            body += chunk
+                        
+                        request = (headers + b"\r\n\r\n" + body).decode('utf-8', 'ignore')
+                    else:
+                        request = req_raw.decode('utf-8', 'ignore')
+                    
                     Log.d(f"Request: {request[:200] + '...' if len(request) > 200 else request}")
                     
                     params = self.parse_request(request)
@@ -514,7 +538,7 @@ class WebServer:
                     html = self.generate_html(params)
                     response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n{html}"
                     
-                    cl.send(response.encode('utf-8'))
+                    cl.sendall(response.encode('utf-8'))
                     cl.close()
                 except KeyboardInterrupt:
                     Log.e("\nKeyboard interrupt received - shutting down server gracefully...")
@@ -606,25 +630,27 @@ class WebServer:
         try:
             # Simple parsing for GET parameters
             params = {}
-            Log.d(f"Request is {request}")
+            request_clean = request.lstrip()
+            Log.i(f"Request (first 150 chars): {request_clean[:150]}")
             
-            if request.startswith('POST'):
-                # Extract POST data
-                lines = request.split('\r\n')
-                post_data = lines[-1] if lines else ""                    
+            if request_clean.startswith('POST'):
+                # Extract POST data by splitting headers and body
+                parts = request_clean.split('\r\n\r\n', 1)
+                post_data = parts[1] if len(parts) > 1 else ""
+                Log.i(f"POST body raw data: {post_data}")
                 params = self.parse_data(post_data)
-            elif request.startswith('GET'):
-                lines = request.split('\r\n')
-                Log.d(f"Lines: {lines}")
+            elif request_clean.startswith('GET'):
+                lines = request_clean.split('\r\n')
                 url = lines[0].split()[1]
                 if '?' in url:
                     params_str = url.split('?', 1)[1]
                     params = self.parse_data(params_str)
             else:
-                Log.e("We only support GET and POST requests!")
+                Log.e(f"Unsupported request type. Request starts with: {request_clean[:50]}")
+            Log.i(f"Parsed Params: {params}")
             return params
         except Exception as e:
-            Log.e(e)
+            Log.e(f"Error parsing request: {e}")
             return {}
 
 if __name__ == "__main__":

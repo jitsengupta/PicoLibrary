@@ -6,6 +6,7 @@
 """
 
 import time
+import micropython
 from machine import Timer, RTC
 from Log import *
 
@@ -188,7 +189,11 @@ class HardwareTimer(BaseTimer):
     
     def timeout(self, timer):
         self.cancel()
-        self._handler.timeout(self._name)
+        micropython.schedule(self._execute_handler, None)
+
+    def _execute_handler(self, _):
+        if self._handler:
+            self._handler.timeout(self._name)
 
 class SoftwareTimer(BaseTimer):
     """
