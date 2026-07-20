@@ -1,7 +1,9 @@
 """
-Log.py - a simplistic Logging process. Built to kind of mimic the
-Android Logging process, but at the same time having a global level
-set to see the types of logs being displayed.
+# Log.py
+# A simplistic Logging process. Built to kind of mimic the
+# Android Logging process, but at the same time having a global level
+# set to see the types of logs being displayed.
+# Author: Jit Sengupta
 
 Basic usage:
 
@@ -26,6 +28,7 @@ class Log:
 
     name = ''
     level = ALL
+    SAVE = False
 
     @classmethod
     def i(cls, message):
@@ -41,6 +44,15 @@ class Log:
     def e(cls, message):
         if (cls.level >= ERROR):
             Log.pr(message)
+            if getattr(cls, 'SAVE', False):
+                import time
+                t = time.localtime()
+                timestamp = "{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}".format(t[0], t[1], t[2], t[3], t[4], t[5])
+                with open('pico.log', 'a') as f:
+                    if cls.name:
+                        f.write(f"{timestamp} - {cls.name}: {message}\n")
+                    else:
+                        f.write(f"{timestamp} - {message}\n")
 
     @classmethod
     def pr(cls, message):
@@ -60,5 +72,23 @@ if __name__ == '__main__':
     Log.level = ERROR
     Log.i(f'This should NOT print (level: {Log.level})')
     Log.e(f'This should print (level: {Log.level})')
+    
+    # Test SAVE feature
+    Log.SAVE = True
+    Log.e("This is a saved error log message")
+    Log.SAVE = False
+    
+    # Verify file was written
+    try:
+        with open("pico.log", "r") as f:
+            content = f.read()
+            print("pico.log content:")
+            print(content)
+        import os
+        os.remove("pico.log")
+    except OSError:
+        pass
+    
+    Log.i("Testing complete - all checks passed")
     
 

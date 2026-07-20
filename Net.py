@@ -397,7 +397,7 @@ class Net:
         """
         return self._send(url, method=PUT, data=data, headers=headers, auth=auth, token=token)
     
-    def _send(self, url, method, data=None, headers=None, auth=None, token=None):
+    def _send(self, url, method, data=None, headers=None, auth=None, token=None, timeout=30):
         """
         Internal method to handle all requests
         """
@@ -421,15 +421,15 @@ class Net:
                 raise RuntimeError("Not connected to any network")
             
             if method == GET:
-                response=requests.get(url, headers=headers, auth=auth)
+                response=requests.get(url, headers=headers, auth=auth, timeout=timeout)
             elif method == PUT:
                 response=requests.put(url,
                              json = data,
-                             headers=headers, auth=auth)
+                             headers=headers, auth=auth, timeout=timeout)
             elif method == POST:
                 response=requests.post(url,
                              json = data,
-                             headers=headers, auth=auth)
+                             headers=headers, auth=auth, timeout=timeout)
             else:
                 raise RuntimeError("Method not supported")
             
