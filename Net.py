@@ -37,13 +37,32 @@ class Net:
         self._blink = False
         self._status_code = 0 # last status code from network operations
         
-    def connect(self, ssid, password=None, max_wait=10):
+    def connect(self, ssid, password=None, max_wait=10, pm_off=True):
         """
         Connect to the wifi network with a maximum wait time
+
+        Parameters:
+        ----------
+        ssid : str
+            The SSID of the network to connect to
+        password : str, optional
+            The password of the network to connect to
+        max_wait : int, optional
+            The maximum time to wait for the connection to establish
+        pm_off : bool, optional
+            Whether to disable power management - turned off by default
         """
 
         self._sta = network.WLAN(network.STA_IF)
         self._sta.active(True)
+        
+        if pm_off:
+            # Disable power management to improve connection stability
+            try:
+                self._sta.config(pm=0xa11140)
+            except Exception as e:
+                Log.d(f"Could not disable WLAN power management: {e}")
+
         if password is not None:
             self._sta.connect(ssid, password)
         else:
