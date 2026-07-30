@@ -32,7 +32,7 @@ GS8 = framebuf.GS8
 
 
 class FrameBuffer(framebuf.FrameBuffer):
-    def _reverse(self, s: string) -> string:
+    def _reverse(self, s: str) -> str:
         t = ""
         for i in range(0, len(s)):
             t += s[len(s) - 1 - i]
