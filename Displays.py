@@ -93,6 +93,8 @@ class LCDDisplay(Display):
                 I2C_ADDR = i2c.scan()[0]
                 from pico_i2c_lcd import I2cLcd
                 self._lcd = I2cLcd(i2c, I2C_ADDR, 2, 16)
+            except ImportError as e:
+                raise e
             except:
                 raise ValueError('Could not connect to display - check wiring.')
         self._working = False

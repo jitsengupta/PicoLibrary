@@ -674,5 +674,5 @@ class WebServer:
 
 if __name__ == "__main__":
     net = Net()
-    net.startAccessPoint("PicoAP", "micropythoN")
-    Log.i(net.getAccessPointInfo())
+    net.connect('FIU_WiFi', None)
+    Log.i(net.getStationInfo())
